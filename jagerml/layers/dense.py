@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 from jagerml.imports import *
+from jagerml.helper import *
 
 class Dense:
     def __init__(self, nInputs, nNeurons):
@@ -12,7 +13,7 @@ class Dense:
 
 def runTest1():
     print("[**][test][dense_layer]")
-    iris = datasets.load_iris()
+    iris = getData()
     data = iris.data
     target = iris.target
 
@@ -21,8 +22,3 @@ def runTest1():
     print(iris.feature_names)
     print(iris.data.shape)
     print(iris.target.shape)
-
-    dense = Dense(4,3)
-    dense.forward((data))
-
-    print(dense.output[:5])
