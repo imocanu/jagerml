@@ -1,0 +1,9 @@
+pip
+numpy
+psutil
+setuptools
+matplotlib
+pandas
+seaborn
+sklearn
+scikit-learn
