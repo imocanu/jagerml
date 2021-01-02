@@ -7,3 +7,5 @@ pandas
 seaborn
 sklearn
 scikit-learn
+pytest
+pyopencl

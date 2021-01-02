@@ -17,10 +17,20 @@ class LossCategoricalCrossentropy(Loss):
         yPredClipp = np.clip(yPred, 1e-7, 1 - 1e-7)
 
         if len(yTrue.shape) == 1:
-            predicted = yPredClipp[range[samples], yTrue]
+            predicted = yPredClipp[range(samples), yTrue]
         elif len(yTrue.shape) == 2:
             predicted = np.sum(yPredClipp * yTrue, axis=1)
 
         loss = -np.log(predicted)
         return loss
+
+    def backward(self, dvalues, yTrue):
+        samples = len(dvalues)
+        labels = len(dvalues[0])
+
+        if len(yTrue.shape) == 1:
+            yTrue = np.eye(labels)[yTrue]
+
+        self.dinputs = -yTrue / dvalues
+        self.dinputs = self.dinputs / samples
 

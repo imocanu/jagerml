@@ -35,7 +35,12 @@ pip3 freeze
 ```
 python3 setup.py develop
 ```
+#### Run tests :
+```
+python3 -m pytest
+```
 #### Leave virtual environment 
 ```
 deactivate
 ```
+

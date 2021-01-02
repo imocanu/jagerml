@@ -1,3 +1,8 @@
+import logging
+import pytest
+# datasets
+from sklearn import datasets
+
 def parseParams():
     import argparse
     parser = argparse.ArgumentParser(description='Run tests',

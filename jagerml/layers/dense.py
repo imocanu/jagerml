@@ -10,15 +10,10 @@ class Dense:
 
     def forward(self, inputs):
         self.output = np.dot(inputs, self.weights) + self.biases
+        self.inputs = inputs
+        return True
 
-def runTest1():
-    print("[**][test][dense_layer]")
-    iris = getData()
-    data = iris.data
-    target = iris.target
-
-    print(iris.keys())
-    print(iris.target_names)
-    print(iris.feature_names)
-    print(iris.data.shape)
-    print(iris.target.shape)
+    def backward(self, dvalues):
+        self.dweights = np.dot(self.inputs.T, dvalues)
+        self.dbiases  = np.sum(dvalues, axis=0, keepdims=True)
+        self.dinputs  = np.dot(dvalues, self.weights.T)
