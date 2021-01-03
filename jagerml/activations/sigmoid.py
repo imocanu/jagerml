@@ -2,16 +2,14 @@
 
 from jagerml.helper import *
 
-
-class ReLU:
+class Sigmoid:
 
     def forward(self, inputs):
-        self.output = np.maximum(0, inputs)
         self.inputs = inputs
+        self.output = 1 / (1 + np.exp(-inputs))
 
     def backward(self, dvalues):
-        self.dinputs = dvalues.copy()
-        self.dinputs[self.inputs <= 0] = 0
+        self.dinputs = dvalues * (1 - self.output) * self.output
 
     def predictions(self, outputs):
-        return outputs
+        return (outputs > 0.5) * 1

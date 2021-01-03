@@ -5,7 +5,7 @@ print(find_packages())
 
 setup(
     name="jagerml",
-    version="0.0.0",
+    version="0.0.1",
     url='https://github.com/imocanu/jagerml',
     description='tool with a shot of machine learning optimizations',
     packages=['jagerml'],
@@ -18,7 +18,7 @@ setup(
     license="MIT",
     python_requires=">=3.8.0",
     install_requires=['numpy'],
-    platforms= ["any"],
-    include_package_data = True
+    platforms=["any"],
+    include_package_data=True
 )
 

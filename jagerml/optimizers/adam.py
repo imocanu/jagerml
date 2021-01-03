@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
-from jagerml.imports import *
+from jagerml.helper import *
+
 
 class Adam:
     def __init__(self, learningRate=0.001, decay=0., epsilon=1e-7, beta1 = 0.9,beta2= 0.999):
@@ -19,26 +20,26 @@ class Adam:
 
     def updateParams(self, layer):
         if not hasattr (layer, 'weight_cache'):
-            layer.weight_momentums = np.zeros_like(layer.weights)
-            layer.weight_cache = np.zeros_like(layer.weights)
-            layer.bias_momentums = np.zeros_like(layer.biases)
-            layer.bias_cache = np.zeros_like(layer.biases)
+            layer.weightMomentums = np.zeros_like(layer.weights)
+            layer.weightCache = np.zeros_like(layer.weights)
+            layer.biasMomentums = np.zeros_like(layer.biases)
+            layer.biasCache = np.zeros_like(layer.biases)
 
-        layer.weight_momentums = self.beta1 * layer.weight_momentums + (1 - self.beta1) * layer.dweights
-        layer.bias_momentums = self.beta1 * layer.bias_momentums + (1 - self.beta1) * layer.dbiases
+        layer.weightMomentums = self.beta1 * layer.weightMomentums + (1 - self.beta1) * layer.dweights
+        layer.biasMomentums = self.beta1 * layer.biasMomentums + (1 - self.beta1) * layer.dbiases
 
-        weight_momentums_corrected = layer.weight_momentums / (1 - self.beta1 ** (self.iterations + 1))
-        bias_momentums_corrected = layer.bias_momentums / (1 - self.beta1 ** (self.iterations + 1))
+        weightMomentumsCorrected = layer.weightMomentums / (1 - self.beta1 ** (self.iterations + 1))
+        biasMomentumsCorrected = layer.biasMomentums / (1 - self.beta1 ** (self.iterations + 1))
 
-        layer.weight_cache = self.beta2 * layer.weight_cache + (1 - self.beta2) * layer.dweights ** 2
-        layer.bias_cache = self.beta2 * layer.bias_cache + (1 - self.beta2) * layer.dbiases ** 2
+        layer.weightCache = self.beta2 * layer.weightCache + (1 - self.beta2) * layer.dweights ** 2
+        layer.biasCache = self.beta2 * layer.biasCache + (1 - self.beta2) * layer.dbiases ** 2
 
-        weight_cache_corrected = layer.weight_cache / (1 - self.beta2 ** (self.iterations + 1))
-        bias_cache_corrected = layer.bias_cache / (1 - self.beta2 ** (self.iterations + 1))
-        layer.weights += - self.currentlearningRate * \
-                          weight_momentums_corrected / \
+        weight_cache_corrected = layer.weightCache / (1 - self.beta2 ** (self.iterations + 1))
+        bias_cache_corrected = layer.biasCache / (1 - self.beta2 ** (self.iterations + 1))
+        layer.weights += -self.currentlearningRate * \
+                          weightMomentumsCorrected / \
                           (np.sqrt(weight_cache_corrected) + self.epsilon)
-        layer.biases += - self.currentlearningRate * bias_momentums_corrected  /\
+        layer.biases += -self.currentlearningRate * biasMomentumsCorrected  /\
                         (np.sqrt(bias_cache_corrected) + self.epsilon)
 
     def postUpdateParams(self):

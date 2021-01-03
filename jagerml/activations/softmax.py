@@ -1,16 +1,16 @@
 #!/usr/bin/env python3
 
-from jagerml.imports import *
+from jagerml.helper import *
+from jagerml.evaluate import LossCategoricalCrossentropy
+
 
 class Softmax:
 
-    def __init__(self):
-        pass
-
     def forward(self, inputs):
+        self.inputs = inputs
         expVals = np.exp(inputs - np.max(inputs,
-                                        axis=1,
-                                        keepdims=True))
+                                         axis=1,
+                                         keepdims=True))
         # normalize
         normalize = expVals / np.sum(expVals,
                                      axis=1,
@@ -25,8 +25,11 @@ class Softmax:
             jacobianMatrix = np.diagflat(singleOutput) - np.dot(singleOutput, singleOutput.T)
             self.dinputs[index] = np.dot(jacobianMatrix, singleDvalues)
 
-from jagerml.evaluate import LossCategoricalCrossentropy
-class SoftmaxLossCrossentropy():
+    def predictions(self, outputs):
+        return np.argmax(outputs, axis=1)
+
+
+class SoftmaxLossCrossentropy:
     def __init__(self):
         self.activation = Softmax()
         self.loss = LossCategoricalCrossentropy()

@@ -1,1 +1,5 @@
-from .evaluate import LossCategoricalCrossentropy
+from .evaluate import LossCategoricalCrossentropy , \
+    BinaryCrossentropy, \
+    MeanAbsoluteError, \
+    MeanSquaredError, \
+    AccuracyRegression

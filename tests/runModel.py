@@ -1,9 +1,13 @@
 #!/usr/bin/env python3
 
-
-from jagerml.layers import Dense
-from jagerml.activations import ReLU, Softmax, SoftmaxLossCrossentropy
-from jagerml.evaluate import LossCategoricalCrossentropy
+from jagerml.model import Model
+from jagerml.layers import Dense, Dropout
+from jagerml.activations import ReLU, Softmax, SoftmaxLossCrossentropy, Sigmoid, Linear
+from jagerml.evaluate import LossCategoricalCrossentropy, \
+    BinaryCrossentropy, \
+    MeanSquaredError, \
+    MeanAbsoluteError, \
+    AccuracyRegression
 from jagerml.optimizers import SGD, AdaGrad, RMSprop, Adam
 from jagerml.helper import *
 
@@ -261,7 +265,7 @@ def runModel6():
     accTotal  = []
     lrTotal = []
 
-    for epoch in range(10000):
+    for epoch in range(100):
         dense1.forward(data)
         relu.forward(dense1.output)
         dense2.forward(relu.output)
@@ -272,7 +276,7 @@ def runModel6():
         accuracy = np.mean(predictions==target)
         accTotal.append(accuracy)
 
-        if not epoch%1000:
+        if not epoch%10:
             print("Epoch {} loss {} acc {} lr {}".format(epoch,
                                                          lossVal,
                                                          accuracy,
@@ -303,10 +307,237 @@ def runModel6():
     plt.plot(np.asarray(range(len(lrTotal))),  np.asarray(lrTotal))
     plt.show()
 
+def runModel7():
+    print("[**][run model - Adam]")
+    iris = getData()
+    data = iris.data
+    target = iris.target
+
+    dense1 = Dense(4, 512, weightL2=5e-4, biasL2=5e-4)
+    relu = ReLU()
+    dropout = Dropout(0.1)
+    dense2 = Dense(512, 3)
+    lossActivation = SoftmaxLossCrossentropy()
+
+    optimizer = Adam(learningRate=0.02, decay=5e-7)
+
+    lossTotal = []
+    accTotal  = []
+    lrTotal = []
+
+    for epoch in range(1000):
+        dense1.forward(data)
+        relu.forward(dense1.output)
+        dropout.forward(relu.output)
+        dense2.forward(dropout.output)
+        lossVal = lossActivation.forward(dense2.output, target)
+        lossTotal.append(lossVal)
+
+        regularizationLoss = lossActivation.loss.regularization(dense1) + \
+                             lossActivation.loss.regularization(dense2)
+
+        loss = lossVal + regularizationLoss
+
+        predictions = np.argmax(lossActivation.output, axis=1)
+        accuracy = np.mean(predictions==target)
+        accTotal.append(accuracy)
+
+        if not epoch%100:
+            print("Epoch {} loss {} acc {} lr {} regLoss {}".format(epoch,
+                                                                    lossVal,
+                                                                    accuracy,
+                                                                    optimizer.currentlearningRate,
+                                                                    regularizationLoss))
+        lrTotal.append(optimizer.currentlearningRate)
+
+        lossActivation.backward(lossActivation.output, target)
+        dense2.backward(lossActivation.dinputs)
+        dropout.backward(dense2.inputs)
+        relu.backward(dense2.dinputs)
+        dense1.backward(relu.dinputs)
+
+        optimizer.preUpdateParams()
+        optimizer.updateParams(dense1)
+        optimizer.updateParams(dense2)
+        optimizer.postUpdateParams()
+
+    plt.figure(1)
+    plt.plot(np.asarray(range(len(lossTotal))), np.asarray(lossTotal))
+    plt.figure(2)
+    plt.plot(np.asarray(range(len(accTotal))),  np.asarray(accTotal))
+    plt.figure(3)
+    plt.plot(np.asarray(range(len(lrTotal))),  np.asarray(lrTotal))
+    plt.show()
+
+def runModel8():
+    print("[**][run model - Adam]")
+    iris = getData()
+    data = iris.data
+    target = iris.target
+
+    target = target.reshape(-1, 1)
+    #print(target)
+
+    dense1 = Dense(4, 64, weightL2=5e-4, biasL2=5e-4)
+    relu = ReLU()
+    dense2 = Dense(64, 1)
+    sigmoid = Sigmoid()
+
+    lossFunction = BinaryCrossentropy()
+
+    optimizer = Adam(learningRate=0.001, decay=5e-7)
+
+    lossTotal = []
+    accTotal  = []
+    lrTotal = []
+
+    for epoch in range(10000):
+        dense1.forward(data)
+        relu.forward(dense1.output)
+        dense2.forward(relu.output)
+        sigmoid.forward(dense2.output)
+        lossVal = lossFunction.calculate(sigmoid.output, target)
+        lossTotal.append(lossVal)
+
+        regularizationLoss = lossFunction.regularization(dense1) + \
+                             lossFunction.regularization(dense2)
+
+        loss = lossVal + regularizationLoss
+
+        predictions = (sigmoid.output > 0.5 ) * 1
+        accuracy = np.mean(predictions==target)
+        accTotal.append(accuracy)
+
+        if not epoch%100:
+            print("Epoch {} loss {} acc {} lr {} regLoss {}".format(epoch,
+                                                                    lossVal,
+                                                                    accuracy,
+                                                                    optimizer.currentlearningRate,
+                                                                    regularizationLoss))
+        lrTotal.append(optimizer.currentlearningRate)
+
+        lossFunction.backward(sigmoid.output, target)
+        sigmoid.backward(lossFunction.dinputs)
+        dense2.backward(sigmoid.dinputs)
+        relu.backward(dense2.dinputs)
+        dense1.backward(relu.dinputs)
+
+        optimizer.preUpdateParams()
+        optimizer.updateParams(dense1)
+        optimizer.updateParams(dense2)
+        optimizer.postUpdateParams()
+
+    plt.figure(1)
+    plt.plot(np.asarray(range(len(lossTotal))), np.asarray(lossTotal))
+    plt.figure(2)
+    plt.plot(np.asarray(range(len(accTotal))),  np.asarray(accTotal))
+    plt.figure(3)
+    plt.plot(np.asarray(range(len(lrTotal))),  np.asarray(lrTotal))
+    plt.show()
+
+def runModel9():
+    print("[**][run model - Regression]")
+    iris = getData()
+    data = iris.data
+    target = iris.target
+
+    target = target.reshape(-1, 1)
+    #print(target)
+
+    dense1 = Dense(4, 64, weightL2=5e-4, biasL2=5e-4)
+    relu = ReLU()
+    dense2 = Dense(64, 1)
+    linear = Linear()
+
+    lossFunction = MeanSquaredError()
+    optimizer = Adam(learningRate=0.01, decay=1e-3)
+
+    lossTotal = []
+    accTotal  = []
+    lrTotal = []
+
+    accuracyPrecision = np.std(target) / 250
+
+    for epoch in range(10000):
+        dense1.forward(data)
+        relu.forward(dense1.output)
+        dense2.forward(relu.output)
+        linear.forward(dense2.output)
+        lossVal = lossFunction.calculate(linear.output, target)
+
+        regularizationLoss = lossFunction.regularization(dense1) + \
+                             lossFunction.regularization(dense2)
+
+        loss = lossVal + regularizationLoss
+        lossTotal.append(loss)
+
+        predictions = linear.output
+        accuracy = np.mean(np.absolute(predictions - target) < accuracyPrecision)
+        accTotal.append(accuracy)
+
+        if not epoch%100:
+            print("Epoch {} loss {} acc {} lr {} regLoss {}".format(epoch,
+                                                                    loss,
+                                                                    accuracy,
+                                                                    optimizer.currentlearningRate,
+                                                                    regularizationLoss))
+        lrTotal.append(optimizer.currentlearningRate)
+
+        lossFunction.backward(linear.output, target)
+        linear.backward(lossFunction.dinputs)
+        dense2.backward(linear.dinputs)
+        relu.backward(dense2.dinputs)
+        dense1.backward(relu.dinputs)
+
+        optimizer.preUpdateParams()
+        optimizer.updateParams(dense1)
+        optimizer.updateParams(dense2)
+        optimizer.postUpdateParams()
+
+    plt.figure(1)
+    plt.plot(np.asarray(range(len(lossTotal))), np.asarray(lossTotal))
+    plt.figure(2)
+    plt.plot(np.asarray(range(len(accTotal))),  np.asarray(accTotal))
+    plt.figure(3)
+    plt.plot(np.asarray(range(len(lrTotal))),  np.asarray(lrTotal))
+    plt.figure(4)
+    plt.plot(data[:,2], target)
+    plt.plot(data[:, 2], linear.output)
+    plt.show()
+
+def runModel10():
+    print("[**][run Model + Regression]")
+    iris = getData()
+    data = iris.data
+    target = iris.target
+
+    target = target.reshape(-1, 1)
+
+    model = Model()
+    model.add(Dense(4, 64, weightL2=5e-4, biasL2=5e-4))
+    model.add(ReLU())
+    model.add(Dense(64, 64))
+    model.add(ReLU())
+    model.add(Dense(64, 1))
+    model.add(Linear())
+
+    model.set(
+        loss=MeanSquaredError(),
+        optimizer=Adam(learningRate=0.005, decay=1e-3),
+        accuracy=AccuracyRegression()
+    )
+
+    model.fit()
+    model.train(data, target, epochs=10000, verbose=100)
+
 if __name__ == "__main__":
     #runModel()
     #runModel2()
     #runModel3()
     #runModel4()
     #runModel5()
-    runModel6()
+    #runModel6()
+    #runModel7()
+    #runModel8()
+    #runModel9()
+    runModel10()

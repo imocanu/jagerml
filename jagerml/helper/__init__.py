@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-from jagerml.imports import *
+from .imports import *
 
 def getData():
     iris = datasets.load_iris()
