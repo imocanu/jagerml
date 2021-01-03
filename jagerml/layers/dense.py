@@ -5,8 +5,8 @@ from jagerml.helper import *
 
 class Dense:
     def __init__(self, nInputs, nNeurons,
-                 weightL1 = 0, biasL1 = 0,
-                 weightL2 = 0, biasL2 = 0):
+                 weightL1=0, biasL1=0,
+                 weightL2=0, biasL2=0):
 
         self.weights = 0.1 * np.random.randn(nInputs, nNeurons)
         self.biases = np.zeros((1, nNeurons))
@@ -15,9 +15,9 @@ class Dense:
         self.biasL1 = biasL1
         self.biasL2 = biasL2
 
-    def forward(self, inputs):
-        self.output = np.dot(inputs, self.weights) + self.biases
+    def forward(self, inputs, training):
         self.inputs = inputs
+        self.output = np.dot(inputs, self.weights) + self.biases
 
     def backward(self, dvalues):
         self.dweights = np.dot(self.inputs.T, dvalues)

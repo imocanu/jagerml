@@ -5,7 +5,7 @@ from jagerml.helper import *
 
 class ReLU:
 
-    def forward(self, inputs):
+    def forward(self, inputs, training):
         self.output = np.maximum(0, inputs)
         self.inputs = inputs
 

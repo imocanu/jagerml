@@ -6,7 +6,7 @@ from jagerml.evaluate import LossCategoricalCrossentropy
 
 class Softmax:
 
-    def forward(self, inputs):
+    def forward(self, inputs, training):
         self.inputs = inputs
         expVals = np.exp(inputs - np.max(inputs,
                                          axis=1,

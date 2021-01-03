@@ -519,7 +519,7 @@ def runModel10():
     model.add(Dense(64, 64))
     model.add(ReLU())
     model.add(Dense(64, 1))
-    model.add(Linear())
+    model.add(Sigmoid())
 
     model.set(
         loss=MeanSquaredError(),

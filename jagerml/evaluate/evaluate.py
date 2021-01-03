@@ -8,24 +8,25 @@ class Loss:
     def rememberTrainableLayers(self, trainLayers):
         self.trainLayers = trainLayers
 
-    def regularization(self, layer):
+    def regularization(self):
         regularizationLoss = 0
 
-        if layer.weightL1 > 0:
-            regularizationLoss += layer.weightL1 * np.sum(np.abs(layer.weights))
+        for layer in self.trainLayers:
+            if layer.weightL1 > 0:
+                regularizationLoss += layer.weightL1 * np.sum(np.abs(layer.weights))
 
-        if layer.weightL2 > 0:
-            regularizationLoss += layer.weightL2 * np.sum(layer.weights * layer.weights)
+            if layer.weightL2 > 0:
+                regularizationLoss += layer.weightL2 * np.sum(layer.weights * layer.weights)
 
-        if layer.biasL1 > 0:
-            regularizationLoss += layer.biasL1 * np.sum(np.abs(layer.biases))
+            if layer.biasL1 > 0:
+                regularizationLoss += layer.biasL1 * np.sum(np.abs(layer.biases))
 
-        if layer.biasL2 > 0:
-            regularizationLoss += layer.biasL2 * np.sum(layer.biases * layer.biases)
+            if layer.biasL2 > 0:
+                regularizationLoss += layer.biasL2 * np.sum(layer.biases * layer.biases)
 
         return regularizationLoss
 
-    def calculate(self, output, y, *,useRegularization=False):
+    def calculate(self, output, y, useRegularization=False):
         losses = self.forward(output, y)
         meanLoss = np.mean(losses)
         if not useRegularization:
@@ -38,12 +39,12 @@ class LossCategoricalCrossentropy(Loss):
 
     def forward(self, yPred, yTrue):
         samples = len(yPred)
-        yPredClipp = np.clip(yPred, 1e-7, 1 - 1e-7)
+        yPredClip = np.clip(yPred, 1e-7, 1 - 1e-7)
 
         if len(yTrue.shape) == 1:
-            predicted = yPredClipp[range(samples), yTrue]
+            predicted = yPredClip[range(samples), yTrue]
         elif len(yTrue.shape) == 2:
-            predicted = np.sum(yPredClipp * yTrue, axis=1)
+            predicted = np.sum(yPredClip * yTrue, axis=1)
 
         loss = -np.log(predicted)
         return loss
@@ -118,6 +119,10 @@ class AccuracyRegression(Accuracy):
 
     def __init__(self):
         self.precision = None
+
+    def init(self, y, reinit=False):
+        if self.precision is None or reinit:
+            self.precision = np.std(y) / 250
 
     def compare(self, yPred, yTrue):
         return np.absolute(yPred - yTrue) < self.precision

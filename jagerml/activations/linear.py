@@ -5,7 +5,7 @@ from jagerml.helper import *
 
 class Linear:
 
-    def forward(self, inputs):
+    def forward(self, inputs, training):
         self.inputs = inputs
         self.output = inputs
 

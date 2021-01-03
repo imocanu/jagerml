@@ -24,14 +24,14 @@ class Model:
         self.optimizer = optimizer
         self.accuracy = accuracy
 
-    def train(self, X, y, *, epochs=1, verbose=1, validationData=None):
+    def train(self, X, y, epochs=1, verbose=1, validationData=None):
 
         self.accuracy.init(y)
 
         for epoch in range(1, epochs+1):
-            output = self.forward(X)
+            output = self.forward(X, training=True)
 
-            dataLoss, regularizationLoss = self.loss.calculate(output, y, True)
+            dataLoss, regularizationLoss = self.loss.calculate(output, y, useRegularization=True)
             loss = dataLoss + regularizationLoss
 
             predictions = self.outputLayerActivation.predictions(output)
@@ -48,7 +48,7 @@ class Model:
                 print("Epoch {} acc {} loss {} ls {}".format(epoch,
                                                              accuracy,
                                                              loss,
-                                                             self.optmizer.currentlearningrate))
+                                                             self.optimizer.currentlearningRate))
         if validationData is not None:
             X_test, y_test = validationData
             output = self.forward(X_test)
@@ -86,10 +86,12 @@ class Model:
                 isinstance(self.loss, LossCategoricalCrossentropy):
             self.softmaxClassifierOutput = SoftmaxLossCrossentropy()
 
-    def forward(self, X):
-        self.inputLayer.forward(X)
+    def forward(self, X, training):
+        self.inputLayer.forward(X, training)
+
         for layer in self.layers:
-            layer.forward(layer.prev.output)
+            layer.forward(layer.prev.output, training)
+
         return layer.output
 
     def backward(self, output, y):
@@ -99,8 +101,15 @@ class Model:
 
             self.layers[-1].dinputs = self.softmaxClassifierOutput
 
-        for layer in reversed(self.layers[:-1]):
-            layer.backward(layer.next.dinputs)
+            for layer in reversed(self.layers[:-1]):
+                layer.backward(layer.next.dinputs)
+
+            self.loss.backward(output, y)
+
+            for layer in reversed(self.layers[:-1]):
+                layer.backward(layer.next.dinputs)
+
+            return
 
         self.loss.backward(output, y)
 

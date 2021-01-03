@@ -4,7 +4,7 @@ from jagerml.helper import *
 
 class Sigmoid:
 
-    def forward(self, inputs):
+    def forward(self, inputs, training):
         self.inputs = inputs
         self.output = 1 / (1 + np.exp(-inputs))
 

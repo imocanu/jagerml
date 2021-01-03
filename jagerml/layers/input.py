@@ -5,8 +5,5 @@ from jagerml.helper import *
 
 class Input:
 
-    def __init__(self):
-        self.output = None
-
-    def forward(self, inputs):
+    def forward(self, inputs, training):
         self.output = inputs
