@@ -2,6 +2,7 @@
 
 from jagerml.helper import *
 
+
 class Sigmoid:
 
     def forward(self, inputs, training):

@@ -4,7 +4,7 @@ from jagerml.helper import *
 
 
 class Adam:
-    def __init__(self, learningRate=0.001, decay=0., epsilon=1e-7, beta1 = 0.9,beta2= 0.999):
+    def __init__(self, learningRate=0.001, decay=0., epsilon=1e-7, beta1=0.9, beta2=0.999):
         self.learningRate = learningRate
         self.currentlearningRate = learningRate
         self.decay = decay
@@ -16,10 +16,10 @@ class Adam:
     def preUpdateParams(self):
         if self.decay:
             self.currentlearningRate = self.learningRate * \
-                                       ( 1. / (1. + self.decay * self.iterations))
+                                       (1. / (1. + self.decay * self.iterations))
 
     def updateParams(self, layer):
-        if not hasattr (layer, 'weight_cache'):
+        if not hasattr(layer, 'weight_cache'):
             layer.weightMomentums = np.zeros_like(layer.weights)
             layer.weightCache = np.zeros_like(layer.weights)
             layer.biasMomentums = np.zeros_like(layer.biases)
@@ -37,9 +37,9 @@ class Adam:
         weight_cache_corrected = layer.weightCache / (1 - self.beta2 ** (self.iterations + 1))
         bias_cache_corrected = layer.biasCache / (1 - self.beta2 ** (self.iterations + 1))
         layer.weights += -self.currentlearningRate * \
-                          weightMomentumsCorrected / \
-                          (np.sqrt(weight_cache_corrected) + self.epsilon)
-        layer.biases += -self.currentlearningRate * biasMomentumsCorrected  /\
+                         weightMomentumsCorrected / \
+                         (np.sqrt(weight_cache_corrected) + self.epsilon)
+        layer.biases += -self.currentlearningRate * biasMomentumsCorrected / \
                         (np.sqrt(bias_cache_corrected) + self.epsilon)
 
     def postUpdateParams(self):

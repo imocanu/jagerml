@@ -10,10 +10,6 @@ class Model:
 
     def __init__(self):
         self.layers = []
-        self.loss = None
-        self.optimizer = None
-        self.inputLayer = None
-        self.accuracy = None
         self.softmaxClassifierOutput = None
 
     def add(self, layer):
@@ -24,41 +20,72 @@ class Model:
         self.optimizer = optimizer
         self.accuracy = accuracy
 
-    def train(self, X, y, epochs=1, verbose=1, validationData=None):
+    def train(self, X, y, epochs=1, verbose=1, validationData=None, batchSize=None):
 
         self.accuracy.init(y)
+        trainSteps = 1
 
-        for epoch in range(1, epochs+1):
-            output = self.forward(X, training=True)
-
-            dataLoss, regularizationLoss = self.loss.calculate(output, y, useRegularization=True)
-            loss = dataLoss + regularizationLoss
-
-            predictions = self.outputLayerActivation.predictions(output)
-            accuracy = self.accuracy.calculate(predictions, y)
-
-            self.backward(output, y)
-
-            self.optimizer.preUpdateParams()
-            for layer in self.trainablelayers:
-                self.optimizer.updateParams(layer)
-            self.optimizer.postUpdateParams()
-
-            if not epoch % verbose:
-                print("Epoch {} acc {} loss {} ls {}".format(epoch,
-                                                             accuracy,
-                                                             loss,
-                                                             self.optimizer.currentlearningRate))
         if validationData is not None:
-            X_test, y_test = validationData
-            output = self.forward(X_test)
-            loss = self.loss.calculate(output, y_test)
+            validationSteps = 1
+            X_val, y_val = validationData
 
-            predictions = self.outputLayerActivation.predictions(output)
-            accuracy = self.accuracy.calculate(predictions, y_test)
+        if batchSize is not None:
+            trainSteps = len(X) // batchSize
+            if trainSteps * batchSize < len(X):
+                trainSteps += 1
 
-            print("Validation acc {} loss {}", accuracy, loss)
+            if validationData is not None:
+                validationSteps = len(X_val) // batchSize
 
+            if validationSteps * batchSize < len(X_val):
+                validationSteps += 1
+
+        for epoch in range(epochs):
+            print("[Epoch] {} \n".format(epoch))
+            self.loss.newPass()
+            self.accuracy.newPass()
+
+            for step in range(trainSteps):
+
+                if batchSize is None:
+                    batchX = X
+                    batchy = y
+                else:
+                    batchX = X[step * batchSize:(step + 1) * batchSize]
+                    batchy = y[step * batchSize:(step + 1) * batchSize]
+
+                output = self.forward(batchX, training=True)
+                dataLoss, regularizationLoss = self.loss.calculate(output, batchy, useRegularization=True)
+                loss = dataLoss + regularizationLoss
+
+                finalPredictions = self.outputLayerActivation.predictions(output)
+                finalAccuracy = self.accuracy.calculate(finalPredictions, batchy)
+
+                self.backward(output, batchy)
+
+                self.optimizer.preUpdateParams()
+                for layer in self.trainablelayers:
+                    self.optimizer.updateParams(layer)
+                self.optimizer.postUpdateParams()
+
+                # if not epoch % verbose or step == trainSteps - 1:
+                #     print("[{}] acc{} loss {} dataL {} lr {}".format(step,
+                #                                                      finalAccuracy,
+                #                                                      loss,
+                #                                                      dataLoss,
+                #                                                      self.optimizer.currentlearningRate))
+            epochDataLoss, epochRegularizationLoss = self.loss.calculateAccumulated(useRegularization=True)
+            epochLoss = epochDataLoss + epochRegularizationLoss
+            epochAccuracy = self.accuracy.calculateAccumulated()
+
+            print("> {} acc{} loss {} dataL {} lr {}".format(step,
+                                                                        finalAccuracy,
+                                                                        loss,
+                                                                        dataLoss,
+                                                                        self.optimizer.currentlearningRate))
+
+            if validationData is not None:
+                self.evaluate(*validationData, batchSize=batchSize)
 
     def fit(self):
         self.inputLayer = Input()
@@ -99,7 +126,7 @@ class Model:
         if self.softmaxClassifierOutput is not None:
             self.softmaxClassifierOutput.backward(output, y)
 
-            self.layers[-1].dinputs = self.softmaxClassifierOutput
+            self.layers[-1].dinputs = self.softmaxClassifierOutput.dinputs
 
             for layer in reversed(self.layers[:-1]):
                 layer.backward(layer.next.dinputs)
@@ -115,3 +142,34 @@ class Model:
 
         for layer in reversed(self.layers):
             layer.backward(layer.next.dinputs)
+
+    def evaluate(self, X_val, y_val, batchSize=None):
+        validationSteps = 1
+        if batchSize is not None:
+            validationSteps = len(X_val) // batchSize
+
+            if validationSteps * batchSize < len(X_val):
+                validationSteps += 1
+
+            self.loss.newPass()
+            self.accuracy.newPass()
+        else:
+            print("[Evaluate] :")
+
+        for step in range(validationSteps):
+            if batchSize is None:
+                batchX = X_val
+                batchy = y_val
+            else:
+                batchX = X_val[step * batchSize:(step + 1) * batchSize]
+                batchy = y_val[step * batchSize:(step + 1) * batchSize]
+
+            output = self.forward(batchX, training=False)
+            self.loss.calculate(output, batchy)
+
+            finalPredictions = self.outputLayerActivation.predictions(output)
+            self.accuracy.calculate(finalPredictions, batchy)
+
+        validationLoss = self.loss.calculateAccumulated()
+        validationAccuracy = self.accuracy.calculateAccumulated()
+        print("> acc {} loss {}".format(validationAccuracy, validationLoss))

@@ -4,10 +4,11 @@ from jagerml.model import Model
 from jagerml.layers import Dense, Dropout
 from jagerml.activations import ReLU, Softmax, SoftmaxLossCrossentropy, Sigmoid, Linear
 from jagerml.evaluate import LossCategoricalCrossentropy, \
-    BinaryCrossentropy, \
+    LossBinaryCrossentropy, \
     MeanSquaredError, \
     MeanAbsoluteError, \
-    AccuracyRegression
+    AccuracyRegression, \
+    AccuracyCategorical
 from jagerml.optimizers import SGD, AdaGrad, RMSprop, Adam
 from jagerml.helper import *
 
@@ -26,8 +27,8 @@ def runModel():
 
     relu = ReLU()
     softmax = Softmax()
-    dense1 = Dense(4,8)
-    dense2 = Dense(8,3)
+    dense1 = Dense(4, 8)
+    dense2 = Dense(8, 3)
     loss = LossCategoricalCrossentropy()
 
     dense1.forward(data)
@@ -42,6 +43,7 @@ def runModel():
     print("Softmax :\n", softmax.output[:3])
     print("Loss :", lossVal)
 
+
 def runModel2():
     print("[**][run model]")
     iris = getData()
@@ -50,21 +52,21 @@ def runModel2():
 
     relu = ReLU()
     softmax = Softmax()
-    dense1 = Dense(4,6)
-    dense2 = Dense(6,3)
+    dense1 = Dense(4, 6)
+    dense2 = Dense(6, 3)
     loss = LossCategoricalCrossentropy()
 
     maxLoss = 1000
     best_dense1_weights = dense1.weights.copy()
-    best_dense1_biases  = dense1.biases.copy()
+    best_dense1_biases = dense1.biases.copy()
     best_dense2_weights = dense2.weights.copy()
-    best_dense2_biases  = dense2.biases.copy()
+    best_dense2_biases = dense2.biases.copy()
 
     for step in range(10000):
         dense1.weights += 0.05 * np.random.randn(4, 6)
-        dense1.biases  += 0.05 * np.random.randn(1, 6)
+        dense1.biases += 0.05 * np.random.randn(1, 6)
         dense2.weights += 0.05 * np.random.randn(6, 3)
-        dense2.biases  += 0.05 * np.random.randn(1, 3)
+        dense2.biases += 0.05 * np.random.randn(1, 3)
 
         dense1.forward(data)
         relu.forward(dense1.output)
@@ -73,8 +75,8 @@ def runModel2():
 
         lossVal = loss.calculate(softmax.output, target)
 
-        predictions = np.argmax(softmax.output, axis = 1)
-        accuracy = np.mean(predictions==target)
+        predictions = np.argmax(softmax.output, axis=1)
+        accuracy = np.mean(predictions == target)
 
         if lossVal < maxLoss:
             print("New weights for step {} loss {} acc {}".format(step, lossVal, accuracy))
@@ -96,15 +98,15 @@ def runModel3():
     data = iris.data
     target = iris.target
 
-    dense1 = Dense(4,6)
+    dense1 = Dense(4, 6)
     relu = ReLU()
-    dense2 = Dense(6,3)
+    dense2 = Dense(6, 3)
     softmaxLoss = SoftmaxLossCrossentropy()
     loss = LossCategoricalCrossentropy()
 
     sgd = SGD(decay=1e-3, momentum=0.9)
     lossTotal = []
-    accTotal  = []
+    accTotal = []
 
     for epoch in range(10001):
         dense1.forward(data)
@@ -114,10 +116,10 @@ def runModel3():
         lossTotal.append(lossVal)
 
         predictions = np.argmax(softmaxLoss.output, axis=1)
-        accuracy = np.mean(predictions==target)
+        accuracy = np.mean(predictions == target)
         accTotal.append(accuracy)
 
-        if not epoch%100:
+        if not epoch % 100:
             print("Epoch {} loss {} acc {} lr {}".format(epoch,
                                                          lossVal,
                                                          accuracy,
@@ -136,7 +138,7 @@ def runModel3():
     plt.figure(1)
     plt.plot(np.asarray(range(len(lossTotal))), np.asarray(lossTotal))
     plt.figure(2)
-    plt.plot(np.asarray(range(len(accTotal))),  np.asarray(accTotal))
+    plt.plot(np.asarray(range(len(accTotal))), np.asarray(accTotal))
     plt.show()
 
 
@@ -146,15 +148,15 @@ def runModel4():
     data = iris.data
     target = iris.target
 
-    dense1 = Dense(4,6)
+    dense1 = Dense(4, 6)
     relu = ReLU()
-    dense2 = Dense(6,3)
+    dense2 = Dense(6, 3)
     softmaxLoss = SoftmaxLossCrossentropy()
     loss = LossCategoricalCrossentropy()
 
     optimizer = AdaGrad(decay=1e-4)
     lossTotal = []
-    accTotal  = []
+    accTotal = []
     lrTotal = []
 
     for epoch in range(10001):
@@ -165,10 +167,10 @@ def runModel4():
         lossTotal.append(lossVal)
 
         predictions = np.argmax(softmaxLoss.output, axis=1)
-        accuracy = np.mean(predictions==target)
+        accuracy = np.mean(predictions == target)
         accTotal.append(accuracy)
 
-        if not epoch%1000:
+        if not epoch % 1000:
             print("Epoch {} loss {} acc {} lr {}".format(epoch,
                                                          lossVal,
                                                          accuracy,
@@ -188,9 +190,9 @@ def runModel4():
     plt.figure(1)
     plt.plot(np.asarray(range(len(lossTotal))), np.asarray(lossTotal))
     plt.figure(2)
-    plt.plot(np.asarray(range(len(accTotal))),  np.asarray(accTotal))
+    plt.plot(np.asarray(range(len(accTotal))), np.asarray(accTotal))
     plt.figure(3)
-    plt.plot(np.asarray(range(len(lrTotal))),  np.asarray(lrTotal))
+    plt.plot(np.asarray(range(len(lrTotal))), np.asarray(lrTotal))
     plt.show()
 
 
@@ -200,15 +202,15 @@ def runModel5():
     data = iris.data
     target = iris.target
 
-    dense1 = Dense(4,6)
+    dense1 = Dense(4, 6)
     relu = ReLU()
-    dense2 = Dense(6,3)
+    dense2 = Dense(6, 3)
     softmaxLoss = SoftmaxLossCrossentropy()
     loss = LossCategoricalCrossentropy()
 
     optimizer = RMSprop(decay=1e-4)
     lossTotal = []
-    accTotal  = []
+    accTotal = []
     lrTotal = []
 
     for epoch in range(10001):
@@ -219,10 +221,10 @@ def runModel5():
         lossTotal.append(lossVal)
 
         predictions = np.argmax(softmaxLoss.output, axis=1)
-        accuracy = np.mean(predictions==target)
+        accuracy = np.mean(predictions == target)
         accTotal.append(accuracy)
 
-        if not epoch%1000:
+        if not epoch % 1000:
             print("Epoch {} loss {} acc {} lr {}".format(epoch,
                                                          lossVal,
                                                          accuracy,
@@ -242,9 +244,9 @@ def runModel5():
     plt.figure(1)
     plt.plot(np.asarray(range(len(lossTotal))), np.asarray(lossTotal))
     plt.figure(2)
-    plt.plot(np.asarray(range(len(accTotal))),  np.asarray(accTotal))
+    plt.plot(np.asarray(range(len(accTotal))), np.asarray(accTotal))
     plt.figure(3)
-    plt.plot(np.asarray(range(len(lrTotal))),  np.asarray(lrTotal))
+    plt.plot(np.asarray(range(len(lrTotal))), np.asarray(lrTotal))
     plt.show()
 
 
@@ -254,15 +256,15 @@ def runModel6():
     data = iris.data
     target = iris.target
 
-    dense1 = Dense(4,64)
+    dense1 = Dense(4, 64)
     relu = ReLU()
-    dense2 = Dense(64,3)
+    dense2 = Dense(64, 3)
     softmaxLoss = SoftmaxLossCrossentropy()
     loss = LossCategoricalCrossentropy()
 
     optimizer = Adam(learningRate=0.05, decay=5e-7)
     lossTotal = []
-    accTotal  = []
+    accTotal = []
     lrTotal = []
 
     for epoch in range(100):
@@ -273,10 +275,10 @@ def runModel6():
         lossTotal.append(lossVal)
 
         predictions = np.argmax(softmaxLoss.output, axis=1)
-        accuracy = np.mean(predictions==target)
+        accuracy = np.mean(predictions == target)
         accTotal.append(accuracy)
 
-        if not epoch%10:
+        if not epoch % 10:
             print("Epoch {} loss {} acc {} lr {}".format(epoch,
                                                          lossVal,
                                                          accuracy,
@@ -284,9 +286,9 @@ def runModel6():
         lrTotal.append(optimizer.currentlearningRate)
         if accuracy == 1.0:
             print("Epoch {} loss {} acc {} lr {}".format(epoch,
-                                                        lossVal,
-                                                        accuracy,
-                                                        optimizer.currentlearningRate))
+                                                         lossVal,
+                                                         accuracy,
+                                                         optimizer.currentlearningRate))
             break
 
         softmaxLoss.backward(softmaxLoss.output, target)
@@ -302,10 +304,11 @@ def runModel6():
     plt.figure(1)
     plt.plot(np.asarray(range(len(lossTotal))), np.asarray(lossTotal))
     plt.figure(2)
-    plt.plot(np.asarray(range(len(accTotal))),  np.asarray(accTotal))
+    plt.plot(np.asarray(range(len(accTotal))), np.asarray(accTotal))
     plt.figure(3)
-    plt.plot(np.asarray(range(len(lrTotal))),  np.asarray(lrTotal))
+    plt.plot(np.asarray(range(len(lrTotal))), np.asarray(lrTotal))
     plt.show()
+
 
 def runModel7():
     print("[**][run model - Adam]")
@@ -322,7 +325,7 @@ def runModel7():
     optimizer = Adam(learningRate=0.02, decay=5e-7)
 
     lossTotal = []
-    accTotal  = []
+    accTotal = []
     lrTotal = []
 
     for epoch in range(1000):
@@ -339,10 +342,10 @@ def runModel7():
         loss = lossVal + regularizationLoss
 
         predictions = np.argmax(lossActivation.output, axis=1)
-        accuracy = np.mean(predictions==target)
+        accuracy = np.mean(predictions == target)
         accTotal.append(accuracy)
 
-        if not epoch%100:
+        if not epoch % 100:
             print("Epoch {} loss {} acc {} lr {} regLoss {}".format(epoch,
                                                                     lossVal,
                                                                     accuracy,
@@ -364,10 +367,11 @@ def runModel7():
     plt.figure(1)
     plt.plot(np.asarray(range(len(lossTotal))), np.asarray(lossTotal))
     plt.figure(2)
-    plt.plot(np.asarray(range(len(accTotal))),  np.asarray(accTotal))
+    plt.plot(np.asarray(range(len(accTotal))), np.asarray(accTotal))
     plt.figure(3)
-    plt.plot(np.asarray(range(len(lrTotal))),  np.asarray(lrTotal))
+    plt.plot(np.asarray(range(len(lrTotal))), np.asarray(lrTotal))
     plt.show()
+
 
 def runModel8():
     print("[**][run model - Adam]")
@@ -376,7 +380,7 @@ def runModel8():
     target = iris.target
 
     target = target.reshape(-1, 1)
-    #print(target)
+    # print(target)
 
     dense1 = Dense(4, 64, weightL2=5e-4, biasL2=5e-4)
     relu = ReLU()
@@ -388,7 +392,7 @@ def runModel8():
     optimizer = Adam(learningRate=0.001, decay=5e-7)
 
     lossTotal = []
-    accTotal  = []
+    accTotal = []
     lrTotal = []
 
     for epoch in range(10000):
@@ -404,11 +408,11 @@ def runModel8():
 
         loss = lossVal + regularizationLoss
 
-        predictions = (sigmoid.output > 0.5 ) * 1
-        accuracy = np.mean(predictions==target)
+        predictions = (sigmoid.output > 0.5) * 1
+        accuracy = np.mean(predictions == target)
         accTotal.append(accuracy)
 
-        if not epoch%100:
+        if not epoch % 100:
             print("Epoch {} loss {} acc {} lr {} regLoss {}".format(epoch,
                                                                     lossVal,
                                                                     accuracy,
@@ -430,10 +434,11 @@ def runModel8():
     plt.figure(1)
     plt.plot(np.asarray(range(len(lossTotal))), np.asarray(lossTotal))
     plt.figure(2)
-    plt.plot(np.asarray(range(len(accTotal))),  np.asarray(accTotal))
+    plt.plot(np.asarray(range(len(accTotal))), np.asarray(accTotal))
     plt.figure(3)
-    plt.plot(np.asarray(range(len(lrTotal))),  np.asarray(lrTotal))
+    plt.plot(np.asarray(range(len(lrTotal))), np.asarray(lrTotal))
     plt.show()
+
 
 def runModel9():
     print("[**][run model - Regression]")
@@ -442,7 +447,7 @@ def runModel9():
     target = iris.target
 
     target = target.reshape(-1, 1)
-    #print(target)
+    # print(target)
 
     dense1 = Dense(4, 64, weightL2=5e-4, biasL2=5e-4)
     relu = ReLU()
@@ -453,7 +458,7 @@ def runModel9():
     optimizer = Adam(learningRate=0.01, decay=1e-3)
 
     lossTotal = []
-    accTotal  = []
+    accTotal = []
     lrTotal = []
 
     accuracyPrecision = np.std(target) / 250
@@ -475,7 +480,7 @@ def runModel9():
         accuracy = np.mean(np.absolute(predictions - target) < accuracyPrecision)
         accTotal.append(accuracy)
 
-        if not epoch%100:
+        if not epoch % 100:
             print("Epoch {} loss {} acc {} lr {} regLoss {}".format(epoch,
                                                                     loss,
                                                                     accuracy,
@@ -497,47 +502,90 @@ def runModel9():
     plt.figure(1)
     plt.plot(np.asarray(range(len(lossTotal))), np.asarray(lossTotal))
     plt.figure(2)
-    plt.plot(np.asarray(range(len(accTotal))),  np.asarray(accTotal))
+    plt.plot(np.asarray(range(len(accTotal))), np.asarray(accTotal))
     plt.figure(3)
-    plt.plot(np.asarray(range(len(lrTotal))),  np.asarray(lrTotal))
+    plt.plot(np.asarray(range(len(lrTotal))), np.asarray(lrTotal))
     plt.figure(4)
-    plt.plot(data[:,2], target)
+    plt.plot(data[:, 2], target)
     plt.plot(data[:, 2], linear.output)
     plt.show()
 
+
 def runModel10():
-    print("[**][run Model + Regression]")
+    print("[**][run Final Model]")
+    from sklearn.model_selection import train_test_split
     iris = getData()
     data = iris.data
     target = iris.target
 
-    target = target.reshape(-1, 1)
+    (X_train, X_test), (y_train, y_test) = train_test_split(data, target, train_size=0.7)
+    print(X_train.shape, y_train.shape, X_test.shape, y_test.shape)
+
+    y_train = y_train.reshape(-1, 1)
+    y_test = y_test.reshape(-1, 1)
 
     model = Model()
-    model.add(Dense(4, 64, weightL2=5e-4, biasL2=5e-4))
+    model.add(Dense(4, 32, weightL2=5e-4, biasL2=5e-4))
     model.add(ReLU())
-    model.add(Dense(64, 64))
-    model.add(ReLU())
-    model.add(Dense(64, 1))
-    model.add(Sigmoid())
+    model.add(Dropout(0.5))
+    model.add(Dense(32, 1))
+    model.add(Softmax())
 
     model.set(
-        loss=MeanSquaredError(),
-        optimizer=Adam(learningRate=0.005, decay=1e-3),
-        accuracy=AccuracyRegression()
+        loss=LossCategoricalCrossentropy(),
+        optimizer=Adam(learningRate=0.05, decay=5e-5),
+        accuracy=AccuracyCategorical()
     )
 
     model.fit()
-    model.train(data, target, epochs=10000, verbose=100)
+    model.train(X_train, y_train, validationData=(X_test, y_test), epochs=1000, verbose=100)
+
+
+def runModel11():
+    print("[**][run Model - MNIST]")
+    from sklearn.model_selection import train_test_split
+
+    import tensorflow as tf
+    from tensorflow import keras
+    fashion_mnist = keras.datasets.fashion_mnist
+    (X_train, y_train), (X_test, y_test) = fashion_mnist.load_data()
+
+    keys = np.array(range(X_train.shape[0]))
+    np.random.shuffle(keys)
+    X_train = X_train[keys]
+    y_train = y_train[keys]
+
+    X_train = (X_train.reshape(X_train.shape[0], -1).astype(np.float32) - 127.5) / 127.5
+    X_test = (X_test.reshape(X_test.shape[0], -1).astype(np.float32) - 127.5) / 127.5
+
+    model = Model()
+    model.add(Dense(X_train.shape[1], 128))
+    model.add(ReLU())
+    model.add(Dense(128, 128))
+    model.add(ReLU())
+    model.add(Dense(128, 128))
+    model.add(Softmax())
+
+    model.set(
+        loss=LossCategoricalCrossentropy(),
+        optimizer=Adam(decay=1e-4),
+        accuracy=AccuracyCategorical()
+    )
+
+    model.fit()
+    model.train(X_train, y_train, epochs=2, verbose=5, validationData=(X_test, y_test), batchSize=128)
+    model.evaluate(X_test, y_test)
+
 
 if __name__ == "__main__":
-    #runModel()
-    #runModel2()
-    #runModel3()
-    #runModel4()
-    #runModel5()
-    #runModel6()
-    #runModel7()
-    #runModel8()
-    #runModel9()
-    runModel10()
+    # runModel()
+    # runModel2()
+    # runModel3()
+    # runModel4()
+    # runModel5()
+    # runModel6()
+    # runModel7()
+    # runModel8()
+    # runModel9()
+    # runModel10()
+    runModel11()

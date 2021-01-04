@@ -29,10 +29,26 @@ class Loss:
     def calculate(self, output, y, useRegularization=False):
         losses = self.forward(output, y)
         meanLoss = np.mean(losses)
+
+        self.accumulatedSum += np.sum(losses)
+        self.accumulatedCount += len(losses)
+
         if not useRegularization:
             return meanLoss
 
         return meanLoss, self.regularization()
+
+    def calculateAccumulated(self, useRegularization=False):
+        dataLoss = self.accumulatedSum / self.accumulatedCount
+
+        if not useRegularization:
+            return dataLoss
+
+        return dataLoss, self.regularization()
+
+    def newPass(self):
+        self.accumulatedSum = 0
+        self.accumulatedCount = 0
 
 
 class LossCategoricalCrossentropy(Loss):
@@ -60,7 +76,7 @@ class LossCategoricalCrossentropy(Loss):
         self.dinputs = self.dinputs / samples
 
 
-class BinaryCrossentropy(Loss):
+class LossBinaryCrossentropy(Loss):
 
     def forward(self, yPred, yTrue):
         yPredClip = np.clip(yPred, 1e-7, 1 - 1e-7)
@@ -112,8 +128,29 @@ class Accuracy:
     def calculate(self, yPred, yTrue):
         comparisons = self.compare(yPred, yTrue)
         acc = np.mean(comparisons)
+
+        self.accumulatedSum += np.sum(comparisons)
+        self.accumulatedCount += len(comparisons)
         return acc
 
+    def calculateAccumulated(self):
+        acc = self.accumulatedSum / self.accumulatedCount
+        return acc
+
+    def newPass(self):
+        self.accumulatedSum = 0
+        self.accumulatedCount = 0
+
+
+class AccuracyCategorical(Accuracy):
+
+    def init(self, y):
+        pass
+
+    def compare(self, predictions, y):
+        if len(y.shape) == 2:
+            y = np.argmax(y, axis=1)
+        return predictions == y
 
 class AccuracyRegression(Accuracy):
 
