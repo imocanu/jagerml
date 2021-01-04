@@ -543,9 +543,6 @@ def runModel10():
 
 def runModel11():
     print("[**][run Model - MNIST]")
-    from sklearn.model_selection import train_test_split
-
-    import tensorflow as tf
     from tensorflow import keras
     fashion_mnist = keras.datasets.fashion_mnist
     (X_train, y_train), (X_test, y_test) = fashion_mnist.load_data()
@@ -573,8 +570,13 @@ def runModel11():
     )
 
     model.fit()
-    model.train(X_train, y_train, epochs=2, verbose=5, validationData=(X_test, y_test), batchSize=128)
+    model.train(X_train, y_train, epochs=1, verbose=1, validationData=(X_test, y_test), batchSize=128)
     model.evaluate(X_test, y_test)
+
+    confidences = model.predict(X_test[:20])
+    predictions = model.outputLayerActivation.predictions(confidences)
+    print(predictions)
+    print(y_test[:20])
 
 
 if __name__ == "__main__":

@@ -68,21 +68,21 @@ class Model:
                     self.optimizer.updateParams(layer)
                 self.optimizer.postUpdateParams()
 
-                # if not epoch % verbose or step == trainSteps - 1:
-                #     print("[{}] acc{} loss {} dataL {} lr {}".format(step,
-                #                                                      finalAccuracy,
-                #                                                      loss,
-                #                                                      dataLoss,
-                #                                                      self.optimizer.currentlearningRate))
+                if verbose >= 1:
+                    if step % verbose == 0:
+                        print("[{}] acc{} loss {} dataL {} lr {}".format(step,
+                                                                         finalAccuracy,
+                                                                         loss,
+                                                                         dataLoss,
+                                                                         self.optimizer.currentlearningRate))
             epochDataLoss, epochRegularizationLoss = self.loss.calculateAccumulated(useRegularization=True)
             epochLoss = epochDataLoss + epochRegularizationLoss
             epochAccuracy = self.accuracy.calculateAccumulated()
-
-            print("> {} acc{} loss {} dataL {} lr {}".format(step,
-                                                                        finalAccuracy,
-                                                                        loss,
-                                                                        dataLoss,
-                                                                        self.optimizer.currentlearningRate))
+            print("[Step] {} :", step)
+            print("> acc {} loss {} dataLoss {} lr {}".format(finalAccuracy,
+                                                              loss,
+                                                              dataLoss,
+                                                              self.optimizer.currentlearningRate))
 
             if validationData is not None:
                 self.evaluate(*validationData, batchSize=batchSize)
@@ -172,4 +172,25 @@ class Model:
 
         validationLoss = self.loss.calculateAccumulated()
         validationAccuracy = self.accuracy.calculateAccumulated()
-        print("> acc {} loss {}".format(validationAccuracy, validationLoss))
+        print("* acc {} loss {}".format(validationAccuracy, validationLoss))
+
+    def predict(self, X, batchSize=None):
+        predictionSteps = 1
+
+        if batchSize is not None:
+            predictionSteps = len(X) // batchSize
+            if predictionSteps * batchSize < len(X):
+                predictionSteps += 1
+
+        output = []
+
+        for step in range(predictionSteps):
+            if batchSize is None:
+                batchX = X
+            else:
+                batchX = X[step * batchSize:(step + 1) * batchSize]
+
+            batchOutput = self.forward(batchX, training=False)
+
+            output.append(batchOutput)
+        return np.vstack(output)
