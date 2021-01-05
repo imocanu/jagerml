@@ -16,3 +16,7 @@ import pyopencl as cl
 import pytest
 # set random
 np.random.seed(1844)
+
+# Tensorflow
+import tensorflow
+import tensorflow.keras
