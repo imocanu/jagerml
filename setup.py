@@ -17,7 +17,7 @@ setup(
     author_email="iulian.mocanux@gmail.com",
     license="MIT",
     python_requires=">=3.8.0",
-    install_requires=['numpy'],
+    install_requires=['numpy', "tests", 'other'],
     platforms=["any"],
     include_package_data=True
 )
