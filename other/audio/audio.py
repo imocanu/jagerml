@@ -194,7 +194,7 @@ model.compile(
 )
 
 
-EPOCHS = 10
+EPOCHS = 15
 history = model.fit(
     train_ds,
     validation_data=val_ds,
@@ -226,6 +226,7 @@ test_acc = sum(y_pred == y_true) / len(y_true)
 print(f'Test set accuracy: {test_acc:.0%}')
 
 confusion_mtx = tf.math.confusion_matrix(y_true, y_pred)
+
 plt.figure(figsize=(10, 8))
 sns.heatmap(confusion_mtx, xticklabels=commands, yticklabels=commands,
             annot=True, fmt='g')
