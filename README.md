@@ -3,13 +3,9 @@ Jager Machine Learning - tool with a shot of machine learning optimizations
 
 ###  Steps to start :
 
-#### Upgrade pip :
+#### Install python3-env :
 ```bash
-python3 -m pip install --user --upgrade pip
-```
-#### Install virtualenv : 
-```bash
-python3 -m pip install --user virtualenv
+sudo apt-get install python3-venv
 ```
 #### Create virtual environment :
 ```bash

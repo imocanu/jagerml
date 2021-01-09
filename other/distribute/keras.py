@@ -1,6 +1,7 @@
 import tensorflow as tf
 import numpy as np
 import os
+import matplotlib.pyplot as plt
 
 fashion_mnist = tf.keras.datasets.fashion_mnist
 (train_images, train_labels), (test_images, test_labels) = fashion_mnist.load_data()
@@ -74,8 +75,20 @@ callbacks = [
     tf.keras.callbacks.TensorBoard(log_dir='./logs'),
     tf.keras.callbacks.ModelCheckpoint(filepath=checkpoint_prefix,
                                        save_weights_only=True),
-    tf.keras.callbacks.LearningRateScheduler(decay),
     PrintLR()
 ]
 
-model.fit(train_dataset, epochs=12, callbacks=callbacks)
+history = model.fit(train_dataset, epochs=12, callbacks=callbacks)
+
+rows = 2
+cols = 2
+n = rows * cols
+fig, axes = plt.subplots(rows, cols, figsize=(8, 8))
+for i, metric in enumerate(history.history):
+    r = i // cols
+    c = i % cols
+    ax = axes[r][c]
+    ax.plot(history.epoch, history.history[metric])
+    ax.set_title(metric)
+
+plt.show()
