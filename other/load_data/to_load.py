@@ -50,14 +50,14 @@ def create_dataset(dataset_data_dir, img_height=180, img_width=180):
     #img_height = 320
     #img_width = 238
     train_ds = tf.keras.preprocessing.image_dataset_from_directory(directory=dataset_data_dir,
-                                                                   validation_split=0.1,
+                                                                   validation_split=0.2,
                                                                    subset="training",
                                                                    seed=356,
                                                                    image_size=(img_height, img_width),
                                                                    batch_size=batch_size)
 
     test_ds = tf.keras.preprocessing.image_dataset_from_directory(directory=dataset_data_dir,
-                                                                  validation_split=0.4,
+                                                                  validation_split=0.2,
                                                                   subset="validation",
                                                                   seed=356,
                                                                   image_size=(img_height, img_width),
