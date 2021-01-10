@@ -1,4 +1,4 @@
-'''
+"""
 Basic:
 - preprocess data
 - build sequential models
@@ -33,4 +33,4 @@ Time, sequences and predictions:
  - use TF for forecasting
  - identify and compensate for sequence bias
  - adjust LearningRate in time series, sequence and prediction models
-'''
+"""

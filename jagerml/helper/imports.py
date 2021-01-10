@@ -18,5 +18,5 @@ import pytest
 np.random.seed(1844)
 
 # Tensorflow
-import tensorflow
+import tensorflow as tf
 import tensorflow.keras

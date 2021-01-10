@@ -5,7 +5,7 @@ print(find_packages())
 
 setup(
     name="jagerml",
-    version="0.0.1",
+    version="0.0.2",
     url='https://github.com/imocanu/jagerml',
     description='tool with a shot of machine learning optimizations',
     packages=['jagerml'],
