@@ -16,7 +16,6 @@ for image_batch, labels_batch in train_ds.take(3):
   print(labels_batch.shape, labels_batch)
 
 AUTOTUNE = tf.data.AUTOTUNE
-
 train_ds = train_ds.cache().shuffle(1000).prefetch(buffer_size=AUTOTUNE)
 test_ds = test_ds.cache().prefetch(buffer_size=AUTOTUNE)
 
