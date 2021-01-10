@@ -1,8 +1,14 @@
+#!/usr/bin/env python3
+from tabnanny import check
+
 from to_load import *
 from to_visualize import *
 import tensorflow as tf
 from tensorflow.keras.models import Sequential
 from tensorflow.keras import layers
+
+from jagerml.helper import check_other_gpu
+check_other_gpu()
 
 data_dir, (img_height, img_width) = get_data_dir(flowers_dataset_url, flowers_dataset_name)
 

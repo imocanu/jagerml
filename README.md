@@ -41,6 +41,7 @@ deactivate
 ```
 #### Python code for GPU optimization:
 ```python
+import tensorflow as tf
 config = tf.compat.v1.ConfigProto()
 config.gpu_options.per_process_gpu_memory_fraction = 0.9
 tf.compat.v1.keras.backend.set_session(tf.compat.v1.Session(config=config))
@@ -48,39 +49,53 @@ tf.compat.v1.keras.backend.set_session(tf.compat.v1.Session(config=config))
 
 #### Example for Model
 ```python
-    (X_train, y_train), (X_test, y_test) = fashion_mnist.load_data()
+from tensorflow import keras
+fashion_mnist = keras.datasets.fashion_mnist
+from jagerml.model import Model
+from jagerml.layers import Dense, Dropout
+from jagerml.activations import ReLU, Softmax, SoftmaxLossCrossentropy, Sigmoid, Linear
+from jagerml.evaluate import LossCategoricalCrossentropy, \
+    LossBinaryCrossentropy, \
+    MeanSquaredError, \
+    MeanAbsoluteError, \
+    AccuracyRegression, \
+    AccuracyCategorical
+from jagerml.optimizers import SGD, AdaGrad, RMSprop, Adam
+from jagerml.helper import *
 
-    keys = np.array(range(X_train.shape[0]))
-    np.random.shuffle(keys)
-    X_train = X_train[keys]
-    y_train = y_train[keys]
+(X_train, y_train), (X_test, y_test) = fashion_mnist.load_data()
 
-    X_train = (X_train.reshape(X_train.shape[0], 
-                               -1).astype(np.float32) - 127.5) / 127.5
-    X_test = (X_test.reshape(X_test.shape[0], 
-                             -1).astype(np.float32) - 127.5) / 127.5
+keys = np.array(range(X_train.shape[0]))
+np.random.shuffle(keys)
+X_train = X_train[keys]
+y_train = y_train[keys]
 
-    model = Model()
-    model.add(Dense(X_train.shape[1], 128))
-    model.add(ReLU())
-    model.add(Dense(128, 128))
-    model.add(ReLU())
-    model.add(Dense(128, 128))
-    model.add(Softmax())
+X_train = (X_train.reshape(X_train.shape[0], 
+                           -1).astype(np.float32) - 127.5) / 127.5
+X_test = (X_test.reshape(X_test.shape[0], 
+                         -1).astype(np.float32) - 127.5) / 127.5
 
-    model.set(
-        loss=LossCategoricalCrossentropy(),
-        optimizer=Adam(decay=1e-4),
-        accuracy=AccuracyCategorical()
-    )
+model = Model()
+model.add(Dense(X_train.shape[1], 128))
+model.add(ReLU())
+model.add(Dense(128, 128))
+model.add(ReLU())
+model.add(Dense(128, 128))
+model.add(Softmax())
 
-    model.fit()
-    model.train(X_train, y_train, 
-                epochs=40, 
-                verbose=50, 
-                validationData=(X_test, y_test), 
-                batchSize=128)
-    model.evaluate(X_test, y_test)
+model.set(
+    loss=LossCategoricalCrossentropy(),
+    optimizer=Adam(decay=1e-4),
+    accuracy=AccuracyCategorical()
+)
+
+model.fit()
+model.train(X_train, y_train, 
+            epochs=40, 
+            verbose=50, 
+            validationData=(X_test, y_test), 
+            batchSize=128)
+model.evaluate(X_test, y_test)
 ```
 ```bash
 [Evaluate] :
