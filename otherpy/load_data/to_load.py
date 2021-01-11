@@ -14,10 +14,16 @@ https://console.cloud.google.com/storage/browser/tfds-data
 '''
 flowers_dataset_name = "flower_photos"
 flowers_dataset_url = "https://storage.googleapis.com/download.tensorflow.org/example_images/flower_photos.tgz"
+
 iris_dataset_url = "https://storage.googleapis.com/download.tensorflow.org/data/iris_training.csv"
 titanic_dataset_file = tf.keras.utils.get_file("train.csv",
                                                "https://storage.googleapis.com/tf-datasets/titanic/train.csv")
 
+train_data, test_data = tfds.load(name="imdb_reviews", split=["train", "test"],
+                                  batch_size=-1, as_supervised=True)
+
+train_examples, train_labels = tfds.as_numpy(train_data)
+test_examples, test_labels = tfds.as_numpy(test_data)
 
 # tf.keras.applications.
 # https://www.tensorflow.org/guide/estimator
