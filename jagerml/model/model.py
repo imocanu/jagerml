@@ -70,15 +70,15 @@ class Model:
 
                 if verbose >= 1:
                     if step % verbose == 0:
-                        print("[{}] acc{} loss {} dataL {} lr {}".format(step,
-                                                                         finalAccuracy,
-                                                                         loss,
-                                                                         dataLoss,
-                                                                         self.optimizer.currentlearningRate))
+                        print("[{:<3}] acc{:.2f} loss {:.2f} dataL {:.2f} lr {:.7f}".format(step,
+                                                                                            finalAccuracy,
+                                                                                            loss,
+                                                                                            dataLoss,
+                                                                self.optimizer.currentlearningRate))
             epochDataLoss, epochRegularizationLoss = self.loss.calculateAccumulated(useRegularization=True)
             epochLoss = epochDataLoss + epochRegularizationLoss
             epochAccuracy = self.accuracy.calculateAccumulated()
-            print("[Step] {} :", step)
+            print("[Steps] {} :".format(step))
             print("> acc {} loss {} dataLoss {} lr {}".format(finalAccuracy,
                                                               loss,
                                                               dataLoss,

@@ -1,60 +1,67 @@
 #!/usr/bin/env python3
 
-import logging
-import pytest
-# datasets
-from sklearn import datasets
-from jagerml.layers import Dense
-
 import time
 import numpy as np
 
 from numpy.testing import assert_almost_equal
-from scipy.special import expit
 
+import tensorflow as tf
 import torch
-import torch.nn.functional as functional
+import torch.nn.functional as torch_nn
+
+
+np.random.seed(156)
+tf.random.set_seed(156)
+torch.random.manual_seed(156)
 
 
 def stochastic_matrix(features, labels):
-    X = np.random.rand(features, labels)
-    # X /= X.sum(axis=1, keepdims=True)
-    return X
+    sm = np.random.rand(features, labels)
+    sm /= sm.sum(axis=1, keepdims=True)
+    return sm
 
 
-def test_leaky_relu(N=50):
+def test_leaky_relu(loops=100):
     from jagerml.activations import LeakyReLU
-    N = 100 if N is None else N
-    for _ in range(N):
-        n_dims = np.random.randint(1, 500)
-        z = stochastic_matrix(1, n_dims)
+    print("[*] LeakyReLU")
+    start = time.time()
+    for _ in range(loops):
+        features = np.random.randint(100, 1000)
+        labels = np.random.randint(100, 1000)
+        sm = stochastic_matrix(features, labels)
         alpha = np.random.uniform(0, 100)
 
         leaky_relu = LeakyReLU(alpha=alpha)
-        leaky_relu.forward(z, True)
-        torch_test = functional.leaky_relu(torch.FloatTensor(z), alpha).numpy()
+        leaky_relu.forward(sm, None)
+        torch_test = torch_nn.leaky_relu(torch.FloatTensor(sm), alpha).numpy()
+        tf_test = tf.nn.leaky_relu(tf.convert_to_tensor(sm), alpha).numpy()
+        assert_almost_equal(leaky_relu.output, tf_test)
         assert_almost_equal(leaky_relu.output, torch_test)
-    print("test pass")
+    end = time.time()
+    print("test pass in {:0.2f} s".format(end - start))
 
 
-def test_relu(N=50):
+def test_relu(loops=100):
     from jagerml.activations import ReLU
-    N = 100 if N is None else N
-    for _ in range(N):
-        n_dims = np.random.randint(1, 500)
-        z = stochastic_matrix(1, n_dims)
+    print("[*] ReLU")
+    start = time.time()
+    for _ in range(loops):
+        features = np.random.randint(100, 1000)
+        labels = np.random.randint(100, 1000)
+        sm = stochastic_matrix(features, labels)
 
         relu = ReLU()
-        relu.forward(z, True)
-        torch_test = functional.relu(torch.FloatTensor(z)).numpy()
+        relu.forward(sm, None)
+        torch_test = torch_nn.relu(torch.FloatTensor(sm)).numpy()
+        tf_test = tf.nn.relu(tf.convert_to_tensor(sm)).numpy()
+        assert_almost_equal(relu.output, tf_test)
         assert_almost_equal(relu.output, torch_test)
-    print("test pass")
+    end = time.time()
+    print("test pass in {:0.2f} s".format(end - start))
 
 
 def test_activations():
-    print("LeakyReLU")
     test_leaky_relu()
-    print("ReLU")
     test_relu()
 
 

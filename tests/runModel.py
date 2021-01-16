@@ -50,13 +50,14 @@ def runModel():
     )
 
     model.fit()
-    model.train(X_train, y_train, epochs=1, verbose=1, validationData=(X_test, y_test), batchSize=128)
+    model.train(X_train, y_train, epochs=20, verbose=100, validationData=(X_test, y_test), batchSize=128)
     model.evaluate(X_test, y_test)
 
     confidences = model.predict(X_test[:20])
     predictions = model.outputLayerActivation.predictions(confidences)
-    print("test :",y_test[:20])
-    print("pred :", predictions)
+    print("[*] check first 20 inputs")
+    print(">test :",y_test[:20])
+    print(">pred :", predictions)
 
 
 if __name__ == "__main__":

@@ -39,13 +39,6 @@ python3 -m pytest
 ```bash
 deactivate
 ```
-#### Python code for GPU optimization:
-```python
-import tensorflow as tf
-config = tf.compat.v1.ConfigProto()
-config.gpu_options.per_process_gpu_memory_fraction = 0.9
-tf.compat.v1.keras.backend.set_session(tf.compat.v1.Session(config=config))
-```
 
 #### Example for Model
 ```python
@@ -91,7 +84,7 @@ model.set(
 
 model.fit()
 model.train(X_train, y_train, 
-            epochs=40, 
+            epochs=20, 
             verbose=50, 
             validationData=(X_test, y_test), 
             batchSize=128)
@@ -99,6 +92,9 @@ model.evaluate(X_test, y_test)
 ```
 ```bash
 [Evaluate] :
-> acc 0.7498 loss 1.2230935114089874
+* acc 0.8364 loss 0.9994725647001709
+[*] check first 20 inputs
+>test : [9 2 1 1 6 1 4 6 5 7 4 5 7 3 4 1 2 4 8 0]
+>pred : [9 2 1 1 6 1 4 6 5 7 4 5 5 3 4 1 2 2 8 0]
 ```
 
