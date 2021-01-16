@@ -11,6 +11,13 @@
 Jager Machine Learning - simple library with a shot of machine learning optimizations
 
 
+[![GitHub issues](https://img.shields.io/github/issues/imocanu/jagerml)](*)
+[![GitHub forks](https://img.shields.io/github/forks/imocanu/jagerml)](*)
+[![GitHub stars](https://img.shields.io/github/stars/imocanu/jagerml)](*)
+[![GitHub license](https://img.shields.io/github/license/imocanu/jagerml)](*)
+[![GitHub license](https://gitlab.com/imocanu1/jagerml/badges/main/pipeline.svg)](*)
+
+
 ###  Steps to start :
 
 #### Install python3-env :
