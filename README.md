@@ -107,6 +107,9 @@ model.evaluate(X_test, y_test)
 >test : [9 2 1 1 6 1 4 6 5 7 4 5 7 3 4 1 2 4 8 0]
 >pred : [9 2 1 1 6 1 4 6 5 7 4 5 5 3 4 1 2 2 8 0]
 ```
-#### TODO :
-[] Improve accuracy
-[] Integrate pyopencl
+
+### TODO
+
+* Improve accuracy
+* Implement Convolutional layers
+* Integrate pyopencl
