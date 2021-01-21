@@ -3,6 +3,7 @@
 """
 
 import tensorflow as tf
+import tensorflow_datasets as tfds
 from tensorflow import keras
 import pandas as pd
 import numpy as np

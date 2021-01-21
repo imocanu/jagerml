@@ -4,14 +4,14 @@
 from time import time
 from collections import OrderedDict
 from jagerml.helper import *
-from jagerml.layers import Input
+from jagerml.layers import Input, Flatten
 from jagerml.activations import Softmax, SoftmaxLossCrossentropy
 from jagerml.evaluate import LossCategoricalCrossentropy
 
 
 class ModelV2:
-    def __init__(self):
-        pass
+    def __init__(self, optimizer):
+        self.optimizer = optimizer
 
     def _init_params(self):
         pass
@@ -20,6 +20,8 @@ class ModelV2:
         """
         CNN encoder
         """
+        self.encoder = OrderedDict()
+        self.encoder["Flatten"] = Flatten(optimizer=self.optimizer)
 
     def _build_decoder(self):
         """

@@ -2,6 +2,12 @@
 """
 CNN
 convolutional layers and pooling layers
+
+To reach 99.5 to 99.7% accuracy on the test set :
+- add image augmentation
+- batch norm
+- use a learning schedule such as 1-cycle
+- IF possibly, create an ensemble
 """
 import tensorflow as tf
 from tensorflow import keras
@@ -9,53 +15,12 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import os
+import tensorflow_datasets as tfds
 
 print(tf.__version__)
 
-(X_train_full, y_train_full), (X_test, y_test) = keras.datasets.fashion_mnist.load_data()
-X_train, X_valid = X_train_full[:-5000], X_train_full[-5000:]
-y_train, y_valid = y_train_full[:-5000], y_train_full[-5000:]
 
-X_mean = X_train.mean(axis=0, keepdims=True)
-X_std = X_train.std(axis=0, keepdims=True) + 1e-7
-X_train = (X_train - X_mean) / X_std
-X_valid = (X_valid - X_mean) / X_std
-X_test = (X_test - X_mean) / X_std
-
-X_train = X_train[..., np.newaxis]
-X_valid = X_valid[..., np.newaxis]
-X_test = X_test[..., np.newaxis]
-
-# from sklearn.datasets import load_sample_image
-# from PIL import Image
-#
-# image = Image.open("jagerML.jpg")
-#
-# # load and display an image with Matplotlib
-# from matplotlib import image
-# from matplotlib import pyplot
-#
-# # load image as pixel array
-# data_bg = image.imread('ml_bg.jpg')
-# data_fg = image.imread('ml_bg.jpg')
-# data_bg = data_bg / 255
-# data_fg = data_fg / 255
-#
-# images = np.array([data_bg, data_fg])
-# batch_size, height, width, channels = images.shape
-# # Create 2 filters
-# filters = np.zeros(shape=(7, 7, channels, 2), dtype=np.float32)
-# filters[:, 3, :, 0] = 1  # vertical line
-# filters[3, :, :, 1] = 1  # horizontal line
-#
-# outputs = tf.nn.conv2d(images, filters, strides=1, padding="SAME")
-#
-# plt.imshow(outputs[0, :, :, 1], cmap="gray")  # plot 1st image's 2nd feature map
-# plt.show()
-
-import tensorflow_datasets as tfds
-
-dataset, info = tfds.load("tf_flowers", as_supervised=True, with_info=True)
+dataset, info = tfds.load("fashion_mnist", as_supervised=True, with_info=True)
 print(info.splits)
 print(info.splits["train"])
 class_names = info.features["label"].names
@@ -112,15 +77,9 @@ def preprocess(image, label, randomize=False):
 
 batch_size = 32
 train_set = train_set_raw.shuffle(1000)
-train_set = train_set.map(preprocess).batch(batch_size).prefetch(1)
-valid_set = valid_set_raw.map(preprocess).batch(batch_size).prefetch(1)
-test_set = test_set_raw.map(preprocess).batch(batch_size).prefetch(1)
-
-# base_model = keras.applications.xception.Xception(weights="imagenet",
-#                                                   include_top=False)
-# avg = keras.layers.GlobalAveragePooling2D()(base_model.output)
-# output = keras.layers.Dense(n_classes, activation="softmax")(avg)
-# model = keras.models.Model(inputs=base_model.input, outputs=output)
+train_set = train_set.batch(batch_size).prefetch(1)
+valid_set = valid_set_raw.batch(batch_size).prefetch(1)
+test_set = test_set_raw.batch(batch_size).prefetch(1)
 
 # model = keras.models.Sequential([
 #     keras.layers.Conv2D(64, 7, activation="relu", padding="same", input_shape=[224, 224, 3]),
@@ -140,42 +99,20 @@ test_set = test_set_raw.map(preprocess).batch(batch_size).prefetch(1)
 # ])
 
 model = keras.models.Sequential([
-    keras.layers.Conv2D(64, 7, activation="relu", padding="same", input_shape=[224, 224, 3]),
+    keras.layers.Conv2D(32, 7, activation="relu", padding="same", input_shape=[28, 28, 1]),
     keras.layers.MaxPooling2D(2),
+    keras.layers.Conv2D(63, 3, activation="relu", padding="same"),
+    keras.layers.Conv2D(64, 3, activation="relu", padding="same"),
     keras.layers.Flatten(),
-    keras.layers.Dense(64, activation="relu"),
+    keras.layers.Dense(128, activation="relu"),
     keras.layers.Dropout(0.5),
     keras.layers.Dense(n_classes, activation="softmax")
 ])
 
-# model = tf.keras.models.Sequential(layers=[
-#     tf.keras.layers.Conv2D(32, (5, 5), activation='relu', input_shape=(224, 224, 3)),
-#     tf.keras.layers.MaxPool2D(),
-#     tf.keras.layers.Conv2D(16, (3, 3), activation='relu'),
-#     tf.keras.layers.MaxPool2D((4, 4)),
-#     tf.keras.layers.Flatten(),
-#     tf.keras.layers.BatchNormalization(),
-#     tf.keras.layers.Dense(256, activation='relu'),
-#     tf.keras.layers.Dense(NUM_CLASSES, activation='softmax')
-# ],
-#     name='ConvModel')
-
-# model.compile(optimizer="adam",
-#               loss_weights="categorical_crossentropy",
-#               metrics=["accuracy"])
-#
-# model.fit(train_set,
-#           steps_per_epoch=int(0.75 * dataset_size / batch_size),
-#           validation_data=valid_set,
-#           validation_steps=int(0.15 * dataset_size / batch_size),
-#           epochs=5)
-
-# for layer in base_model.layers:
-#     layer.trainable = False
-
 optimizer = keras.optimizers.SGD(lr=0.2, momentum=0.9, decay=0.01)
-model.compile(loss="sparse_categorical_crossentropy", optimizer=optimizer,
+model.compile(loss="sparse_categorical_crossentropy", optimizer="nadam",
               metrics=["accuracy"])
+
 # history = model.fit(train_set,
 #                     steps_per_epoch=int(0.75 * dataset_size / batch_size),
 #                     validation_data=valid_set,
@@ -184,5 +121,4 @@ model.compile(loss="sparse_categorical_crossentropy", optimizer=optimizer,
 
 history = model.fit(train_set,
                     validation_data=valid_set,
-                    epochs=10 , batch_size=batch_size)
-
+                    epochs=10, batch_size=batch_size)

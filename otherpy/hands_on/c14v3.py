@@ -19,32 +19,71 @@ import tensorflow_datasets as tfds
 
 print(tf.__version__)
 
-dataset, info = tfds.load("beans", as_supervised=True, with_info=True)
+(valid_set_raw, train_set_raw), info = tfds.load(
+    "tf_flowers",
+    split=["train[10%:25%]", "train[25%:]"],
+    as_supervised=True,
+    with_info=True)
+
 print(info.splits)
 print(info.splits["train"])
 class_names = info.features["label"].names
 print(class_names)
-print(dataset)
 n_classes = info.features["label"].num_classes
 print(n_classes)
 dataset_size = info.splits["train"].num_examples
 print(dataset_size)
+print(type(valid_set_raw), valid_set_raw)
 
-test_set_raw, valid_set_raw, train_set_raw = tfds.load(
-    "beans",
-    split=["train[:10%]", "train[10%:25%]", "train[25%:]"],
-    as_supervised=True)
+# train_set = train_set_raw.shuffle(1000)
+print(type(train_set_raw), train_set_raw)
+
+IMG_SIZE = 150
+batch_size = 32
 
 
-# plt.figure(figsize=(12, 10))
-# index = 0
-# for image, label in train_set_raw.take(3):
-#     index += 1
-#     plt.subplot(3, 3, index)
-#     plt.imshow(image)
-#     plt.title("Class: {}".format(class_names[label]))
-#     plt.axis("off")
+def resize_and_rescale(image, label):
+    image = tf.cast(image, tf.float32)
+    image = tf.image.resize(image, [IMG_SIZE, IMG_SIZE])
+    image = (image / 255.0)
+    return image, label
+
+
+def prep(image, label):
+    # image = tf.cast(image, tf.float32)
+    resized_image = tf.image.resize(image, [IMG_SIZE, IMG_SIZE])
+    # prep_image = (resized_image / 255.0)
+    # final_image = keras.applications.xception.preprocess_input(prep_image)
+    return resized_image, label
+
+
+if hasattr(train_set_raw, "map"):
+    print("OKKK - RAW")
+
+train_set = train_set_raw.shuffle(1000).map(resize_and_rescale).batch(batch_size).prefetch(1)
+valid_set = valid_set_raw.shuffle(1000).map(resize_and_rescale).batch(batch_size).prefetch(1)
+
+if hasattr(train_set, "map"):
+    print("OKKK - SET")
+
+for image, label in train_set.take(3):
+    print(type(image), label)
+    print(image.shape)
+
+train_set_prev = train_set_raw.shuffle(1000).map(resize_and_rescale)
+plt.figure(figsize=(12, 10))
+index = 0
+for image, label in train_set_prev.take(9).cache():
+    index += 1
+    plt.subplot(3, 3, index)
+    plt.imshow(image)
+    plt.title("Class: {}".format(class_names[label]))
+    plt.axis("off")
+    print("-> img shape : ", image.shape)
+
+
 # plt.show()
+# exit()
 
 
 def central_crop(image):
@@ -74,16 +113,6 @@ def preprocess(image, label, randomize=False):
     return final_image, label
 
 
-IMG_SIZE = 250
-
-
-def resize_and_rescale(image, label):
-    image = tf.cast(image, tf.float32)
-    image = tf.image.resize(image, [IMG_SIZE, IMG_SIZE])
-    image = (image / 255.0)
-    return image, label
-
-
 def augment(image_label, seed):
     image, label = image_label
     image, label = resize_and_rescale(image, label)
@@ -110,11 +139,16 @@ data_augmentation = tf.keras.Sequential([
     tf.keras.layers.experimental.preprocessing.RandomRotation(0.2),
 ])
 
-batch_size = 32
-train_set = train_set_raw.shuffle(1000)
-train_set = train_set.batch(batch_size).prefetch(1)
-valid_set = valid_set_raw.batch(batch_size).prefetch(1)
-test_set = test_set_raw.batch(batch_size).prefetch(1)
+data_normalization = tf.keras.Sequential([
+    tf.keras.layers.experimental.preprocessing.Normalization(),
+])
+
+# train_set = train_set_raw.shuffle(1000)
+# train_set1 = train_set_raw.resize(IMG_SIZE, IMG_SIZE)
+
+# train_set = train_set.batch(batch_size).prefetch(1)
+# valid_set = valid_set_raw.batch(batch_size).prefetch(1)
+# test_set = test_set_raw.batch(batch_size).prefetch(1)
 
 # model = keras.models.Sequential([
 #     keras.layers.Conv2D(64, 7, activation="relu", padding="same", input_shape=[224, 224, 3]),
@@ -134,9 +168,12 @@ test_set = test_set_raw.batch(batch_size).prefetch(1)
 # ])
 
 model = keras.models.Sequential()
-model.add(resize_and_rescale)
-model.add(data_augmentation)
-model.add(keras.layers.Conv2D(32, 7, activation="relu", padding="same", input_shape=[250, 250, 1]))
+# model.add(data_normalization)
+# model.add(resize_and_rescale)
+# model.add(data_augmentation)
+# model.add(keras.layers.experimental.preprocessing.Resizing(IMG_SIZE, IMG_SIZE))
+# model.add(keras.layers.experimental.preprocessing.Rescaling(1. / 255, input_shape=(IMG_SIZE, IMG_SIZE, 1)))
+model.add(keras.layers.Conv2D(32, 7, activation="relu", padding="same", input_shape=(IMG_SIZE, IMG_SIZE, 3)))
 model.add(keras.layers.MaxPooling2D(2))
 model.add(keras.layers.Conv2D(63, 3, activation="relu", padding="same"))
 model.add(keras.layers.Conv2D(64, 3, activation="relu", padding="same"))
@@ -156,6 +193,29 @@ model.compile(loss="sparse_categorical_crossentropy",
 #                     validation_steps=int(0.15 * dataset_size / batch_size),
 #                     epochs=5)
 
+EPOCHS = 5
 history = model.fit(train_set,
                     validation_data=valid_set,
-                    epochs=10, batch_size=batch_size)
+                    epochs=EPOCHS,
+                    batch_size=batch_size)
+
+
+# model.evaluate(train_set, test_set)
+
+def plot_fig(i, history_model):
+    fig = plt.figure()
+    plt.plot(range(1, EPOCHS + 1), history_model.history['val_acc'], label='validation')
+    plt.plot(range(1, EPOCHS + 1), history_model.history['acc'], label='training')
+    plt.legend(loc=0)
+    plt.xlabel('epochs')
+    plt.ylabel('accuracy')
+    plt.xlim([1, EPOCHS])
+    #     plt.ylim([0,1])
+    plt.grid(True)
+    plt.title("Model Accuracy")
+    plt.show()
+    # fig.savefig('img/'+str(i)+'-accuracy.jpg')
+    # plt.close(fig)
+
+
+plot_fig(1, history)
