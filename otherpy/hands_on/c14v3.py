@@ -204,7 +204,7 @@ history = model.fit(train_set,
 
 def plot_fig(i, history_model):
     fig = plt.figure()
-    plt.plot(range(1, EPOCHS + 1), history_model.history['val_acc'], label='validation')
+    plt.plot(range(1, EPOCHS + 1), history_model.history['val_accuracy'], label='validation')
     plt.plot(range(1, EPOCHS + 1), history_model.history['acc'], label='training')
     plt.legend(loc=0)
     plt.xlabel('epochs')
