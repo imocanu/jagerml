@@ -44,3 +44,16 @@ def check_ds_show_images(data_set):
         plt.title("Label: {}".format(label))
         plt.axis("off")
     plt.show()
+
+def check_ds_show_batch_images(data_set):
+    plt.figure(figsize=(12, 10))
+    index = 0
+    for image, label in data_set.take(1):
+        for i in range(9):
+            index += 1
+            plt.subplot(3, 3, index)
+            # plt.imshow(image, cmap='gray', vmin=0, vmax=255)
+            plt.imshow(image[i].numpy().astype("uint8"))
+            plt.title("Label: {}".format(label[i]))
+            plt.axis("off")
+    plt.show()

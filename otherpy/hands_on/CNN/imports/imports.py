@@ -25,10 +25,10 @@ def check_other_gpu():
 
 
 def set_proxy(proxy="http://proxy.ka.intel.com:911"):
-    os.environment["http_proxy"] = proxy
-    os.environment["HTTP_PROXY"] = proxy
-    os.environment["https_proxy"] = proxy
-    os.environment["HTTPS_PROXY"] = proxy
+    os.environ["http_proxy"] = proxy
+    os.environ["HTTP_PROXY"] = proxy
+    os.environ["https_proxy"] = proxy
+    os.environ["HTTPS_PROXY"] = proxy
 
 
 def plot_fig(history, epochs):
