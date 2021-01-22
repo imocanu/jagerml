@@ -70,11 +70,41 @@ def run_cnn():
 
 
 def run_cnn_v2():
-    pass
+    URL = "https://storage.googleapis.com/download.tensorflow.org/example_images/flower_photos.tgz"
+    DIRECTORY = "flower_photos"
+    data_dir = load_tfds_from_url_directory(url=URL,
+                                            name_ds=DIRECTORY)
+    train_set, test_set = load_tfds_from_data_dir(data_dir)
+
+    # !!! label_counter, train_counter, test_counter = check_ds_info_return_classes(info)
+
+    IMG_SIZE = 180
+    IMG_CHANNEL = 3
+    BATCH_SIZE = 32
+    EPOCHS = 5
+    LABELS = 5
+    SHAPE = [28, 28, 1]
+
+    model_cnn = cnn_model(labels=LABELS, img_size=IMG_SIZE, img_channels=IMG_CHANNEL)
+    model_cnn.summary()
+
+    model_cnn.compile(loss="sparse_categorical_crossentropy",
+                      optimizer="adam",
+                      metrics=["accuracy"])
+
+    history = model_cnn.fit(train_set,
+                            validation_data=test_set,
+                            epochs=EPOCHS,
+                            batch_size=BATCH_SIZE)
+
+    loss, accuracy = model_cnn.evaluate(train_set)
+    print("Loss     :", loss)
+    print("Accuracy :", accuracy)
+    plot_fig(history, EPOCHS)
 
 
 if __name__ == "__main__":
     check_other_gpu()
     versions()
-    run_cnn()
-    # run_cnn_v2()
+    # run_cnn()
+    run_cnn_v2()
