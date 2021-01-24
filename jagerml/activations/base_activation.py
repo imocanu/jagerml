@@ -22,17 +22,30 @@ class BaseActivation(ABC):
 
 
 class Linearbase(BaseActivation):
-    def __init__(self):
-        self.inputs = None
-        self.outputs = None
-        self.dinputs = None
+    def __init__(self, input=None, weight=None, bias=None):
+        self.input = input
+        self.weight = weight
+        self.bias = bias
+        self.out = None
         super().__init__()
 
     def __str__(self):
         return "Linearbase"
 
     def fn(self, z):
-        return z
+        if self.input is None and self.weight is None:
+            return z
+        elif self.input is not None:
+            if self.bias is not None:
+                output = self.weight.dot(self.input.T)
+                self.out = np.add(self.bias, output)
+                return self.out
+            else:
+                output = self.weight.dot(self.input.T)
+                if self.bias is not None:
+                    output += self.bias
+                self.out = output.T
+                return self.out
 
     def grad(self, x):
         return np.ones_like(x)

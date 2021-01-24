@@ -1,27 +1,6 @@
 #!/usr/bin/env python3
 
-import logging
-import pytest
-# datasets
-from sklearn import datasets
-from jagerml.layers import Dense
-import time
-import numpy as np
-
-from numpy.testing import assert_almost_equal
-
-import tensorflow as tf
-import torch
-import torch.nn as nn
-import torch.nn.functional as F
-
-from mltests import TorchDenseLayer
-
-np.random.seed(156)
-tf.random.set_seed(156)
-torch.random.manual_seed(156)
-
-logger = logging.getLogger(__name__)
+from mltests.includes import *
 
 
 def random_tensor(shape, standardize=False):
@@ -149,24 +128,28 @@ def test_DenseLayer(N=1):
 
 
 def test_linear_layer():
-    features = np.random.randint(100, 1000)
-    labels = np.random.randint(100, 1000)
+    features = np.random.randint(1, 1000)
+    labels = np.random.randint(1, 1000)
     alpha = np.random.randint(0, 100)
     sm = stochastic_matrix(features, labels)
-    # rt = random_tensor((labels, features))
-    rt = torch.rand(labels, features)
+    rt = random_tensor((labels, features))
+    torch_rt = torch.autograd.Variable(torch.FloatTensor(rt),
+                                       requires_grad=True)
+
 
     fc = nn.Linear(in_features=features, out_features=labels)
-    torch_output = fc.forward(rt)
+    torch_output = fc.forward(torch_rt)
     print("TORCH :\n", torch_output, type(torch_output))
 
-    dense = Dense(features, labels)
-    dense.forward(rt.numpy(), True)
-    print("DENSE :\n", dense.output, type(dense.output))
+    from jagerml.layers import DenseLayer
+    dense = DenseLayer(n_out=labels, n_in=features)
+    output = dense.forward(rt)
+    print("\n\n")
+    print("DENSE :\n", output, type(output))
 
     # assert_almost_equal(dense.output, torch_output.detach().numpy(), decimal=6)
 
 
 if __name__ == "__main__":
-    # test_linear_layer()
-    test_DenseLayer(5)
+    test_linear_layer()
+    test_DenseLayer()

@@ -13,7 +13,8 @@ torch.random.manual_seed(156)
 
 
 def convert_to_torch_tensor(var, requires_grad=True):
-    return torch.autograd.Variable(torch.FloatTensor(var), requires_grad=requires_grad)
+    return torch.autograd.Variable(torch.FloatTensor(var),
+                                   requires_grad=requires_grad)
 
 
 class TorchDenseLayer(nn.Module):

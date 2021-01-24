@@ -138,11 +138,12 @@ class DenseLayer(BaseLayer):
                  n_out,
                  act_fn=None,
                  init="glorot_uniform",
+                 n_in=None,
                  optimizer=None):
         super().__init__(optimizer)
 
         self.init = init
-        self.n_in = None
+        self.n_in = n_in
         self.n_out = n_out
         self.act_fn = ActivationInitializer(act_fn)()
         self.parameters = {"W": None, "b": None}
@@ -175,10 +176,8 @@ class DenseLayer(BaseLayer):
         }
 
     def forward(self, X, retain_derived=True):
-        print("[debug] forward")
         if not self.is_initialized:
             self.n_in = X.shape[1]
-            print("[debug] start init", self.n_in)
             self._init_params()
 
         Y, Z = self._fwd(X)
