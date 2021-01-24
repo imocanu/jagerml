@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 
 from jagerml.helper import *
-from jagerml.layers.base import Base
+from jagerml.layers.base_layer import BaseLayer
 
 
-class Flatten(Base):
+class Flatten(BaseLayer):
     def __init__(self, keep_dim="first", optimizer=None):
 
         super().__init__(optimizer)

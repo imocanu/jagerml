@@ -5,8 +5,8 @@ from sklearn import datasets
 
 def parseParams():
     import argparse
-    parser = argparse.ArgumentParser(description='Run tests',
-                                     epilog="- rut tests")
+    parser = argparse.ArgumentParser(description='Run mltests',
+                                     epilog="- rut mltests")
     parser.add_argument('--test',
                         type=int,
                         default=0,
@@ -30,3 +30,8 @@ def checkTestID(newClass, id):
             return testFound
 
     return testFound
+
+
+class TestCls:
+    def __init__(self):
+        print("class ....")

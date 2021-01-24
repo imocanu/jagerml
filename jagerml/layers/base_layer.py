@@ -2,15 +2,18 @@
 
 from jagerml.helper import *
 from abc import ABC, abstractmethod
+from jagerml.initializers import ActivationInitializer, \
+    WeightInitializer, \
+    OptimizerInitializer
 
 
-class Base(ABC):
+class BaseLayer(ABC):
     def __init__(self, optimizer=None):
         """An abstract base class inherited by all neural network layers"""
         self.X = []
         self.act_fn = None
         self.trainable = True
-        # self.optimizer = OptimizerInitializer(optimizer)()
+        self.optimizer = OptimizerInitializer(optimizer)()
 
         self.gradients = {}
         self.parameters = {}
@@ -116,3 +119,111 @@ class Base(ABC):
         }
 
 
+# class Conv2D(BaseLayer):
+#     def __init__(self,
+#                  out_ch,
+#                  kernel_shape,
+#                  pad=0,
+#                  stride=1,
+#                  dilation=0,
+#                  act_fn=None,
+#                  optimizer=None,
+#                  init="glorot_uniform",
+#                  ):
+#         super().__init__(optimizer)
+
+
+class DenseLayer(BaseLayer):
+    def __init__(self,
+                 n_out,
+                 act_fn=None,
+                 init="glorot_uniform",
+                 optimizer=None):
+        super().__init__(optimizer)
+
+        self.init = init
+        self.n_in = None
+        self.n_out = n_out
+        self.act_fn = ActivationInitializer(act_fn)()
+        self.parameters = {"W": None, "b": None}
+        self.is_initialized = False
+
+    def _init_params(self):
+        init_weights = WeightInitializer(str(self.act_fn), mode=self.init)
+
+        b = np.zeros((1, self.n_out))
+        W = init_weights((self.n_in, self.n_out))
+
+        self.parameters = {"W": W, "b": b}
+        self.derived_variables = {"Z": []}
+        self.gradients = {"W": np.zeros_like(W), "b": np.zeros_like(b)}
+        self.is_initialized = True
+
+    @property
+    def hyperparameters(self):
+        """Return a dictionary containing the layer hyperparameters."""
+        return {
+            "layer": "DenseLayer",
+            "init": self.init,
+            "n_in": self.n_in,
+            "n_out": self.n_out,
+            "act_fn": str(self.act_fn),
+            "optimizer": {
+                "cache": self.optimizer.cache,
+                "hyperparameters": self.optimizer.hyperparameters,
+            },
+        }
+
+    def forward(self, X, retain_derived=True):
+        print("[debug] forward")
+        if not self.is_initialized:
+            self.n_in = X.shape[1]
+            print("[debug] start init", self.n_in)
+            self._init_params()
+
+        Y, Z = self._fwd(X)
+
+        if retain_derived:
+            self.X.append(X)
+            self.derived_variables["Z"].append(Z)
+
+        return Y
+
+    def _fwd(self, X):
+        """Actual computation of forward pass"""
+        W = self.parameters["W"]
+        b = self.parameters["b"]
+
+        Z = X @ W + b
+        Y = self.act_fn(Z)
+        return Y, Z
+
+    def backward(self, dLdy, retain_grads=True):
+        assert self.trainable, "Layer is frozen"
+        if not isinstance(dLdy, list):
+            dLdy = [dLdy]
+
+        dX = []
+        X = self.X
+        for dy, x in zip(dLdy, X):
+            dx, dw, db = self._bwd(dy, x)
+            dX.append(dx)
+
+            if retain_grads:
+                self.gradients["W"] += dw
+                self.gradients["b"] += db
+
+        return dX[0] if len(X) == 1 else dX
+
+    def _bwd(self, dLdy, X):
+        """Actual computation of gradient of the loss wrt. X, W, and b"""
+        W = self.parameters["W"]
+        b = self.parameters["b"]
+
+        Z = X @ W + b
+        dZ = dLdy * self.act_fn.grad(Z)
+
+        dX = dZ @ W.T
+        dW = X.T @ dZ
+        dB = dZ.sum(axis=0, keepdims=True)
+        return dX, dW, dB

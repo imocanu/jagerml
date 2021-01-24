@@ -5,18 +5,26 @@ import numpy as np
 import pandas as pd
 import time
 import glob
+
 # visual libraries
 from matplotlib import pyplot as plt
 import seaborn as sns
+
 # datasets
 from sklearn import datasets
+
 # opencl
 import pyopencl as cl
+
 # test
 import pytest
+
 # set random
 np.random.seed(1844)
 
 # Tensorflow
 import tensorflow as tf
 import tensorflow.keras
+
+# abc
+from abc import ABC, abstractmethod
