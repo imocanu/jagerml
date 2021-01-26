@@ -26,7 +26,8 @@ def check_other_gpu():
         print("[#] NO GPU available !!!!")
 
 
-def set_proxy(proxy="http://proxy.ka.intel.com:911"):
+def set_proxy(proxy=""):
+    print("[*] Proxy is : ", proxy)
     os.environ["http_proxy"] = proxy
     os.environ["HTTP_PROXY"] = proxy
     os.environ["https_proxy"] = proxy

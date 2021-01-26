@@ -2,6 +2,7 @@ from imports import *
 
 
 def run_test1():
+    check_version_proxy_gpu()
     url = "https://homl.info/shakespeare"
     fname = "shakespeare.txt"
     file_path = keras.utils.get_file(fname, url)
@@ -48,6 +49,14 @@ def run_test1():
     ])
     model.compile(loss="sparse_categorical_crossentropy", optimizer="adam")
     history = model.fit(dataset, epochs=20)
+
+    def preprocess(texts):
+        X = np.array(tokenizer.texts_to_sequences(texts)) - 1
+        return tf.one_hot(X, max_id)
+
+    X_new = preprocess(["How are yo"])
+    Y_pred = model.predict_classes(X_new)
+    print("Predicted letter :", tokenizer.sequences_to_texts(Y_pred + 1)[0][-1])
 
 
 if __name__ == "__main__":
