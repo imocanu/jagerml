@@ -38,7 +38,7 @@ def set_proxy(proxy=""):
     os.environ["HTTPS_PROXY"] = proxy
 
 
-def check_version_proxy_gpu():
+def check_version_proxy_gpu(proxy=""):
     versions()
-    # set_proxy()
+    set_proxy()
     check_other_gpu()
