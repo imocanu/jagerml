@@ -1,4 +1,4 @@
-from otherpy.hands_on.NLP.imports import *
+from imports import *
 
 
 def nlp_imdb_reviews():
@@ -60,7 +60,10 @@ def nlp_imdb_reviews():
         keras.layers.Dense(1, activation="sigmoid")
     ])
     model.compile(loss="binary_crossentropy", optimizer="adam", metrics=["accuracy"])
-    history = model.fit(train_set, steps_per_epoch=train_size // 32, epochs=5)
+    history = model.fit(train_set,
+                        steps_per_epoch=train_size // 32,
+                        epochs=5,
+                        callbacks=[cb_checkpoint, cb_tensorboard, cb_early_stopping])
 
     plot_graphs(history, metric="accuracy")
 
