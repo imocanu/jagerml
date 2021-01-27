@@ -50,9 +50,10 @@ class Word2Vec(keras.Model):
         self.target_embedding = keras.layers.Embedding(vocab_size,
                                                        embedding_dim,
                                                        input_length=1,
-                                                       name="w2v_embedding", )
+                                                       name="w2v_trg_embedding", )
         self.context_embedding = keras.layers.Embedding(vocab_size,
                                                         embedding_dim,
+                                                        name="w2v_ctx_embedding",
                                                         input_length=num_ns + 1)
         self.dots = keras.layers.Dot(axes=(3, 2))
         self.flatten = keras.layers.Flatten()
@@ -135,6 +136,7 @@ def w2v():
 
     embedding_dim = 128
     word2vec = Word2Vec(VOCAB_SIZE, embedding_dim, num_ns=4)
+
     word2vec.compile(optimizer='adam',
                      loss=tf.keras.losses.CategoricalCrossentropy(from_logits=True),
                      metrics=['accuracy'])
@@ -142,17 +144,84 @@ def w2v():
     tensorboard_callback = tf.keras.callbacks.TensorBoard(log_dir="logs")
 
     history = word2vec.fit(dataset, epochs=EPOCHS, callbacks=[tensorboard_callback])
+    word2vec.summary()
 
     plot_history_without_val(history, EPOCHS)
     plt.show()
 
+
 def example():
     sentence = "The wide road shimmered in the hot sun"
+    print(sentence)
     tokens = list(sentence.lower().split())
     print(tokens)
+
+    # map tokens
+    vocab, index = {}, 1
+    vocab['<pad>'] = 0
+    for token in tokens:
+        if token not in vocab:
+            vocab[token] = index
+            index += 1
+    vocab_size = len(vocab)
+    print(vocab)
+    print(vocab_size)
+
+    inverse_vocab = {index: token for token, index in vocab.items()}
+    print(inverse_vocab)
+
+    example_sequence = [vocab[word] for word in tokens]
+    print(example_sequence)
+
+    # generate skip-grams
+    window_size = 2
+    positive_skip_grams, _ = tf.keras.preprocessing.sequence.skipgrams(
+        example_sequence,
+        vocabulary_size=vocab_size,
+        window_size=window_size,
+        negative_samples=0)
+    print(positive_skip_grams)
+    print(len(positive_skip_grams))
+
+    for target, context in positive_skip_grams[:5]:
+        print(f"({target}, {context}): ({inverse_vocab[target]}, {inverse_vocab[context]})")
+
+    target_word, context_word = positive_skip_grams[0]
+
+    num_ns = 4
+
+    context_class = tf.reshape(tf.constant(context_word, dtype="int64"), (1, 1))
+    negative_sampling_candidates, _, _ = tf.random.log_uniform_candidate_sampler(
+        true_classes=context_class,  # class that should be sampled as 'positive'
+        num_true=1,  # each positive skip-gram has 1 positive context class
+        num_sampled=num_ns,  # number of negative context words to sample
+        unique=True,  # all the negative samples should be unique
+        range_max=vocab_size,  # pick index of the samples from [0, vocab_size]
+        seed=1234,  # seed for reproducibility
+        name="negative_sampling"  # name of this operation
+    )
+    print(negative_sampling_candidates)
+    print([inverse_vocab[index.numpy()] for index in negative_sampling_candidates])
+
+    negative_sampling_candidates = tf.expand_dims(negative_sampling_candidates, 1)
+    context = tf.concat([context_class, negative_sampling_candidates], 0)
+    label = tf.constant([1] + [0] * num_ns, dtype="int64")
+
+    target = tf.squeeze(target_word)
+    context = tf.squeeze(context)
+    label = tf.squeeze(label)
+
+    print(f"target_index    : {target}")
+    print(f"target_word     : {inverse_vocab[target_word]}")
+    print(f"context_indices : {context}")
+    print(f"context_words   : {[inverse_vocab[c.numpy()] for c in context]}")
+    print(f"label           : {label}")
+
+    sampling_table = tf.keras.preprocessing.sequence.make_sampling_table(size=10)
+    print(sampling_table)
 
 
 if __name__ == "__main__":
     check_version_proxy_gpu()
-    # w2v()
-    example()
+    w2v()
+    # example()

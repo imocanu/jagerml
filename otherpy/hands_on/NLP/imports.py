@@ -4,14 +4,16 @@ import tensorflow as tf
 import tensorflow_datasets as tfds
 from tensorflow import keras
 import seaborn as sns
+import os
 import matplotlib as mpl
 import pandas as pd
-import os
 import datetime
 import re
 import string
 import tqdm
 import io
+import PIL
+from collections import Counter
 
 
 def versions():
@@ -99,3 +101,25 @@ def plot_history_without_val(history, epochs):
     plt.ylim(0, None)
     plt.grid(True)
     plt.legend(loc=0)
+
+
+# ==== Callbacks =========
+class PrintValTrainRatioCallback(keras.callbacks.Callback):
+    def on_epoch_end(self, epoch, logs):
+        print("\nLoss val/train: {:.2f}".format(logs["val_loss"] / logs["loss"]))
+        print("Acc val/train: {:.2f}".format(logs["val_sparse_categorical_accuracy"] /
+                                             logs["sparse_categorical_accuracy"]))
+
+
+run_logdir = os.path.join(os.curdir, "logs")
+cb_tensorboard = keras.callbacks.TensorBoard(run_logdir)
+cb_checkpoint = keras.callbacks.ModelCheckpoint("model_cb.h5",
+                                                save_best_only=True)
+cb_early_stopping = keras.callbacks.EarlyStopping(patience=10,
+                                                  restore_best_weights=True)
+cb_print_val_train_ratio = PrintValTrainRatioCallback()
+
+# exponential_decay_fn = exponential_decay(lr0=0.01, s=20)
+# lr_scheduler = keras.callbacks.LearningRateScheduler(piecewise_constant_fn)
+# lr_scheduler = keras.callbacks.ReduceLROnPlateau(factor=0.5, patience=5)
+# lr_scheduler = keras.callbacks.ReduceLROnPlateau(factor=0.5, patience=5)

@@ -1,6 +1,13 @@
-from imports import *
-from tqdm import tqdm
+from ..imports import *
+"""
+Word2Vec : 
+- similar to Embedding
+- combination of 2 methods : Skip Gram and Common Bag Of Words (CBOW)
 
+Types of NLP :  tfidf, count features, logistic regression, naive bayes
+                svm, xgboost, grid search , word vectors, LSTM, GRU, Ensembling
+
+"""
 
 class ResetStatesCallback(keras.callbacks.Callback):
     def on_epoch_begin(self, epoch, logs):
