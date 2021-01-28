@@ -65,7 +65,7 @@ def nlp_imdb_reviews():
         keras.layers.GRU(128),
         keras.layers.Dense(1, activation="sigmoid")
     ])
-    model.compile(loss=keras.losses.binary_crossentropy,
+    model.compile(loss=keras.losses.BinaryCrossentropy(),
                   optimizer=keras.optimizers.Adam(),
                   metrics=["accuracy"])
     #                         steps_per_epoch=train_size // 32,

@@ -15,6 +15,18 @@ import io
 import PIL
 from collections import Counter
 
+from sklearn.model_selection import train_test_split
+from sklearn.utils import shuffle
+
+import collections
+import random
+import time
+import json
+from glob import glob
+from PIL import Image
+import pickle
+
+
 
 def versions():
     print("[*] tf   Version :", tf.__version__)
@@ -33,7 +45,7 @@ def check_other_gpu():
         config = tf.compat.v1.ConfigProto()
         fraction = 0.9
         config.gpu_options.per_process_gpu_memory_fraction = fraction
-        print(" [*] per_process_gpu_memory_fraction is ", fraction)
+        print("  [*] per_process_gpu_memory_fraction is ", fraction)
         tf.compat.v1.keras.backend.set_session(tf.compat.v1.Session(config=config))
     else:
         print("[#] NO GPU available !!!!")
