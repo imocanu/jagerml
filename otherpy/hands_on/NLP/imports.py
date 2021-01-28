@@ -24,6 +24,7 @@ def versions():
     np.random.seed(356)
     sns.set()
     print("[*] tf random is : 356")
+    print("[*] np random is : 356")
 
 
 def check_other_gpu():

@@ -16,6 +16,8 @@ def nlp_imdb_reviews():
     #         print()
 
     VOCAB_SIZE = 10000
+    num_oov_buckets = 1000
+    embed_size = 128
 
     def preprocess(X_batch, y_batch):
         X_batch = tf.strings.substr(X_batch, 0, 300)
@@ -24,33 +26,37 @@ def nlp_imdb_reviews():
         X_batch = tf.strings.split(X_batch)
         return X_batch.to_tensor(default_value=b"<pad>"), y_batch
 
-    # preprocess(X_batch, y_batch)
+    def create_data_set(data_type=""):
+        # preprocess(X_batch, y_batch)
+        vocabulary = Counter()
+        for X_batch, y_batch in datasets[data_type].batch(32).map(preprocess):
+            for review in X_batch:
+                vocabulary.update(list(review.numpy()))
 
-    vocabulary = Counter()
-    for X_batch, y_batch in datasets["train"].batch(32).map(preprocess):
-        for review in X_batch:
-            vocabulary.update(list(review.numpy()))
+        print(len(vocabulary))
 
-    print(len(vocabulary))
+        truncated_vocabulary = [word for word, count in vocabulary.most_common()[:VOCAB_SIZE]]
+        # print(truncated_vocabulary)
 
-    truncated_vocabulary = [word for word, count in vocabulary.most_common()[:VOCAB_SIZE]]
-    # print(truncated_vocabulary)
+        word_to_id = {word: index for index, word in enumerate(truncated_vocabulary)}
 
-    word_to_id = {word: index for index, word in enumerate(truncated_vocabulary)}
+        words = tf.constant(truncated_vocabulary)
+        word_ids = tf.range(len(truncated_vocabulary), dtype=tf.int64)
+        vocab_init = tf.lookup.KeyValueTensorInitializer(words, word_ids)
 
-    words = tf.constant(truncated_vocabulary)
-    word_ids = tf.range(len(truncated_vocabulary), dtype=tf.int64)
-    vocab_init = tf.lookup.KeyValueTensorInitializer(words, word_ids)
-    num_oov_buckets = 1000
-    table = tf.lookup.StaticVocabularyTable(vocab_init, num_oov_buckets)
+        table = tf.lookup.StaticVocabularyTable(vocab_init, num_oov_buckets)
 
-    def encode_words(X_batch, y_batch):
-        return table.lookup(X_batch), y_batch
+        def encode_words(X_batch, y_batch):
+            return table.lookup(X_batch), y_batch
 
-    train_set = datasets["train"].repeat().batch(32).map(preprocess)
-    train_set = train_set.map(encode_words).prefetch(1)
+        # train_set = datasets[data_type].repeat().batch(32).map(preprocess)
+        train_set = datasets[data_type].batch(32).map(preprocess)
+        train_set = train_set.map(encode_words).prefetch(1)
+        return train_set
 
-    embed_size = 128
+    train_set = create_data_set("train")
+    test_set = create_data_set("test")
+
     model = keras.models.Sequential([
         keras.layers.Embedding(VOCAB_SIZE + num_oov_buckets, embed_size,
                                mask_zero=True,  # not shown in the book
@@ -59,13 +65,19 @@ def nlp_imdb_reviews():
         keras.layers.GRU(128),
         keras.layers.Dense(1, activation="sigmoid")
     ])
-    model.compile(loss="binary_crossentropy", optimizer="adam", metrics=["accuracy"])
+    model.compile(loss=keras.losses.binary_crossentropy,
+                  optimizer=keras.optimizers.Adam(),
+                  metrics=["accuracy"])
+    #                         steps_per_epoch=train_size // 32,
     history = model.fit(train_set,
-                        steps_per_epoch=train_size // 32,
                         epochs=5,
-                        callbacks=[cb_checkpoint, cb_tensorboard, cb_early_stopping])
+                        validation_data=test_set,
+                        callbacks=[cb_checkpoint,
+                                   cb_tensorboard,
+                                   cb_early_stopping])
 
-    plot_graphs(history, metric="accuracy")
+    plot_history(history)
+    plt.show()
 
 
 if __name__ == "__main__":
