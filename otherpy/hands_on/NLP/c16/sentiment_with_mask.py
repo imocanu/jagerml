@@ -2,16 +2,6 @@ from to_import import *
 
 
 def run_test():
-    # (X_train, y_train), (X_test, y_test) = keras.datasets.imdb.load_data()
-    #
-    # word_index = keras.datasets.imdb.get_word_index()
-    # id_to_word = {id_ + 3: word for word, id_ in word_index.items()}
-    # for id_, token in enumerate(("<pad>", "<sos>", "<unk>")):
-    #     id_to_word[id_] = token
-    #
-    # print(" ".join([id_to_word[id_] for id_ in X_train[0][:30]]))
-    # print(" ".join([id_to_word[id_] for id_ in X_train[1][:30]]))
-
     datasets, info = tfds.load("imdb_reviews", as_supervised=True, with_info=True)
     train_size = info.splits["train"].num_examples
 
@@ -47,11 +37,20 @@ def run_test():
     EMBED_SIZE = 128
     EPOCHS = 10
 
-    model = keras.models.Sequential()
-    model.add(keras.layers.Embedding(vocab_size + num_oov_buckets, EMBED_SIZE, input_shape=[None]))
-    model.add(keras.layers.GRU(128, return_sequences=True))
-    model.add(keras.layers.GRU(128))
-    model.add(keras.layers.Dense(1, activation="sigmoid"))
+    # model = keras.models.Sequential()
+    # model.add(keras.layers.Embedding(vocab_size + num_oov_buckets, EMBED_SIZE, input_shape=[None]))
+    # model.add(keras.layers.GRU(128, return_sequences=True))
+    # model.add(keras.layers.GRU(128))
+    # model.add(keras.layers.Dense(1, activation="sigmoid"))
+
+    K = keras.backend
+    inputs = keras.layers.Input(shape=[None])
+    mask = keras.layers.Lambda(lambda inputs: K.not_equal(inputs, 0))(inputs)
+    z = keras.layers.Embedding(vocab_size + num_oov_buckets, EMBED_SIZE)(inputs)
+    z = keras.layers.LSTM(128, return_sequences=True)(z, mask=mask)
+    z = keras.layers.LSTM(128)(z, mask=mask)
+    outputs = keras.layers.Dense(1, activation="sigmoid")(z)
+    model = keras.Model(inputs=[inputs], outputs=[outputs])
 
     model.compile(loss="binary_crossentropy",
                   optimizer="adam",
@@ -107,5 +106,5 @@ def load_model():
 
 if __name__ == "__main__":
     check_version_proxy_gpu()
-    # run_test()
-    load_model()
+    run_test()
+    # load_model()
