@@ -121,6 +121,88 @@ def plot_history(history):
     plt.ylim(0, None)
 
 
+def plot_history_per_keys(history, epochs):
+    key_counter = 0
+    has_val = False
+    metrics = []
+    print("[!] Plot = HISTORY = EPOCHS :", epochs)
+    for metric in history.history.keys():
+        if "val" in metric:
+            has_val = True
+        key_counter += 1
+        metrics.append(metric)
+        print(" {metric} :", metric)
+
+    if key_counter == 1 and has_val is False:
+        fig = plt.figure()
+        plt.plot(range(1, epochs + 1), history.history[metrics[0]], label='training')
+        plt.legend(loc=0)
+        plt.xlabel('epochs')
+        plt.ylabel(metrics[0])
+        plt.xlim([1, epochs])
+        plt.grid(True)
+        plt.title(metrics[0])
+
+    elif key_counter == 2 and has_val is False:
+        plt.figure(figsize=(16, 8))
+        plt.subplot(1, 2, 1)
+        metric = metrics[0]
+        plt.plot(range(1, epochs + 1), history.history[metric], label='training')
+        plt.xlabel("Epochs")
+        plt.ylabel(metric)
+        plt.ylim(None, 1)
+
+        plt.subplot(1, 2, 2)
+        metric = metrics[1]
+        plt.plot(range(1, epochs + 1), history.history[metric], label='training')
+        plt.xlabel("Epochs")
+        plt.ylabel(metric)
+        plt.ylim(0, None)
+        plt.grid(True)
+        plt.legend(loc=0)
+        plt.title(metrics[0] + "-" + metrics[1])
+
+    elif key_counter == 2 and has_val is True:
+        fig = plt.figure()
+        metric = metrics[0]
+        plt.plot(range(1, epochs + 1), history.history[metric], label='training')
+        metric = metrics[1]
+        plt.plot(range(1, epochs + 1), history.history[metric], label='training')
+        plt.legend(loc=0)
+        plt.xlabel('epochs')
+        plt.ylabel(metrics[0]+metrics[1])
+        plt.xlim([1, epochs])
+        plt.grid(True)
+        plt.title(metrics[0] + "-" + metrics[1])
+
+    elif key_counter > 2 and has_val is True:
+        if key_counter == 4:
+            plt.figure(figsize=(16, 8))
+            plt.subplot(1, 2, 1)
+            metric1 = metrics[0]
+            metric2 = metrics[1]
+            plt.plot(range(1, epochs + 1), history.history[metric1])
+            plt.plot(range(1, epochs + 1), history.history[metric2])
+            plt.xlabel("Epochs")
+            plt.ylabel(metric)
+            plt.ylim(None, 1)
+
+            plt.subplot(1, 2, 2)
+            metric1 = metrics[2]
+            metric2 = metrics[3]
+            plt.plot(range(1, epochs + 1), history.history[metric1])
+            plt.plot(range(1, epochs + 1), history.history[metric2])
+            plt.xlabel("Epochs")
+            plt.ylabel(metric)
+            plt.ylim(0, None)
+            plt.grid(True)
+            plt.legend(loc=0)
+        else:
+            print("[!] NO PLOT for total keys :", key_counter)
+    else:
+        print("[!] NO PLOT selected !!!")
+
+
 def plot_history_without_val(history, epochs):
     plt.figure(figsize=(16, 8))
     plt.subplot(1, 2, 1)
