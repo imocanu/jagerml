@@ -27,7 +27,6 @@ from PIL import Image
 import pickle
 
 
-
 def versions():
     print("[*] tf   Version :", tf.__version__)
     print("[*] tfds Version :", tfds.__version__)
@@ -42,6 +41,7 @@ def versions():
 def check_other_gpu():
     if len(tf.config.experimental.list_physical_devices('GPU')) > 0:
         print("[#] Num of GPU in system : ", len(tf.config.experimental.list_physical_devices('GPU')))
+        print("[*] is_gpu_available()   :", tf.test.is_gpu_available())
         config = tf.compat.v1.ConfigProto()
         fraction = 0.9
         config.gpu_options.per_process_gpu_memory_fraction = fraction
@@ -60,11 +60,11 @@ def set_proxy(proxy=""):
 
 
 def check_version_proxy_gpu(proxy=""):
-    print("=" * 40)
+    print("=" * 50)
     versions()
     set_proxy(proxy=proxy)
     check_other_gpu()
-    print("=" * 40)
+    print("=" * 50)
 
 
 def plot_fig(history, epochs):
@@ -114,6 +114,28 @@ def plot_history_without_val(history, epochs):
     plt.ylim(0, None)
     plt.grid(True)
     plt.legend(loc=0)
+
+
+def plot_history_with_dataframe(history, epochs):
+    print(history.history.keys())
+    print(len(history.history))
+    print(type(history))
+    print(type(history.history))
+    stereo = False
+    for metric in history.history.keys():
+        if "val" in metric:
+            stereo = True
+        print("> metric :", metric)
+
+    # fig, axs = plt.subplots(len(history.history))
+    # for i in range(len(history.history)):
+    #     axs[i].plot(range(1, epochs + 1), history.history[metric])
+    # plt.show()
+
+    cm = pd.DataFrame(history.history, index=range(1, epochs+1))
+    print(cm.head())
+    cm.plot(xlabel="Epoch", ylabel="Metric", layout=(1, 2), subplots=True)
+    plt.show()
 
 
 # ==== Callbacks =========

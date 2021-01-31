@@ -71,7 +71,7 @@ def w2v():
     IMG_CHANNEL = 1
     BATCH_SIZE = 1024
     BUFFER_SIZE = 10000
-    EPOCHS = 40
+    EPOCHS = 5
     LABELS = 1
     SEED = 42
     AUTOTUNE = tf.data.AUTOTUNE
@@ -146,8 +146,9 @@ def w2v():
     history = word2vec.fit(dataset, epochs=EPOCHS, callbacks=[tensorboard_callback])
     word2vec.summary()
 
-    plot_history_without_val(history, EPOCHS)
-    plt.show()
+    #plot_history_without_val(history, EPOCHS)
+    plot_history_with_dataframe(history, EPOCHS)
+    #plt.show()
 
 
 def example():
