@@ -90,7 +90,6 @@ def load_model():
     num_oov_buckets = 1000
     table = tf.lookup.StaticVocabularyTable(vocab_init, num_oov_buckets)
 
-
     def encode_words():
         return table.lookup(tf.constant([b"movie not bad not bad".split()]))
 

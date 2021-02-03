@@ -7,6 +7,9 @@ Word2Vec :
 Types of NLP :  tfidf, count features, logistic regression, naive bayes
                 svm, xgboost, grid search , word vectors, LSTM, GRU, Ensembling
 
+- removing StopWord - NLTK
+- ngram == tf.keras.layers.experimental.preprocessing TextVectorization
+( https://keras.io/getting_started/intro_to_keras_for_engineers/ )
 """
 
 class ResetStatesCallback(keras.callbacks.Callback):
