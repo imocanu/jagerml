@@ -21,7 +21,7 @@ class ModelV2:
         CNN encoder
         """
         self.encoder = OrderedDict()
-        self.encoder["Flatten"] = Flatten(optimizer=self.optimizer)
+        # self.encoder["Flatten"] = Flatten(optimizer=self.optimizer)
         self.encoder["Dense1"] = DenseLayer(
             n_out=self.latent_dim,
             act_fn=ReLUbase(),

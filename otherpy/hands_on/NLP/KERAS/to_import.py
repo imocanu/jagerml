@@ -28,6 +28,8 @@ from PIL import Image
 import pickle
 
 RANDOM = SEED = 356
+CHECK_DATATSET = 0
+
 
 def versions():
     print("[*] python Version :", sys.version)
@@ -74,24 +76,30 @@ def check_version_proxy_gpu(proxy=None):
 
 
 def check_dataset(dataset):
+    global CHECK_DATATSET
+    CHECK_DATATSET += 1
     if isinstance(dataset, np.ndarray):
-        print("np array")
+        print("[", CHECK_DATATSET, "] np array :", type(dataset), " - ", len(dataset))
     elif isinstance(dataset, dict):
-        print("[*] DICT - len :", len(dataset))
-        print("[*]      - key :", dataset.keys())
+        print("[", CHECK_DATATSET, "] DICT :", type(dataset), " - ", len(dataset))
+        print("[*]      > key :", dataset.keys())
         for any_key in dataset.keys():
             print("<KEY>", any_key, "<TYPE>", type(dataset[any_key]), "<LEN>", len(dataset[any_key]))
             check_dataset(dataset[any_key])
-
     elif isinstance(dataset, pd.core.series.Series):
-        print("Series")
+        print("[", CHECK_DATATSET, "] SERIES :", type(dataset), " - ", len(dataset))
     elif isinstance(dataset, list):
-        print("LIST")
+        print("[", CHECK_DATATSET, "] LIST :", type(dataset), " - ", len(dataset))
+    elif isinstance(dataset, tuple):
+        print("[", CHECK_DATATSET, "] TUPLE :", type(dataset), " - ", len(dataset))
     elif isinstance(dataset, tf.data.Dataset):
-        print("  <DATASET> :", dataset)
-        for x, y in dataset.take(1):
-            print("               >x :", x)
-            print("               >y :", y)
+        print("[", CHECK_DATATSET, "] DATASET :", type(dataset))
+        try:
+            print("       >LEN :", len(dataset))
+        except:
+            print("     <EXCEPTION_TAKE_1> :", dataset.take(1))
+    else:
+        print("[", CHECK_DATATSET, "] ELSE :", type(dataset), " - ", len(dataset))
 
 
 def plot_history_per_keys(history, epochs):
@@ -143,7 +151,7 @@ def plot_history_per_keys(history, epochs):
         plt.plot(range(1, epochs + 1), history.history[metric], label='training')
         plt.legend(loc=0)
         plt.xlabel('epochs')
-        plt.ylabel(metrics[0]+metrics[1])
+        plt.ylabel(metrics[0] + metrics[1])
         plt.xlim([1, epochs])
         plt.grid(True)
         plt.title(metrics[0] + "-" + metrics[1])

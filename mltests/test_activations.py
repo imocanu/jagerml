@@ -105,7 +105,7 @@ def test_relu(loops=100):
 
 def test_relubase(loops=100):
     from jagerml.activations import ReLUbase
-    print("[*] ReLU")
+    print("[*] ReLUbase")
     start = time.time()
     for _ in range(loops):
         features = np.random.randint(100, 1000)
@@ -124,7 +124,7 @@ def test_relubase(loops=100):
 
 def test_softmaxbase(loops=100):
     from jagerml.activations import Softmaxbase
-    print("[*] ReLU")
+    print("[*] Softmaxbase")
     start = time.time()
     for _ in range(loops):
         features = np.random.randint(100, 1000)
@@ -167,11 +167,11 @@ def test_linearbase(loops=100):
 
 def test_activations():
     test_linearbase(5)
-    # test_leaky_relu()
-    # test_leaky_relu_base()
-    # test_relu()
-    # test_relubase()
-    # test_softmaxbase()
+    test_leaky_relu(5)
+    test_leaky_relu_base(5)
+    test_relu(5)
+    test_relubase(5)
+    test_softmaxbase(5)
 
 
 if __name__ == "__main__":

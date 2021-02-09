@@ -3,22 +3,6 @@
 from mltests.includes import *
 
 
-def random_tensor(shape, standardize=False):
-    offset = np.random.randint(-300, 300, shape)
-    X = np.random.rand(*shape) + offset
-
-    if standardize:
-        eps = np.finfo(float).eps
-        X = (X - X.mean(axis=0)) / (X.std(axis=0) + eps)
-    return X
-
-
-def stochastic_matrix(features, labels):
-    sm = np.random.rand(features, labels)
-    sm /= sm.sum(axis=1, keepdims=True)
-    return sm
-
-
 def generate_gray_image():
     # Simulate a 28 x 28 pixel, grayscale "image"
     batch_size = 32
@@ -141,15 +125,15 @@ def test_linear_layer():
     torch_output = fc.forward(torch_rt)
     print("TORCH :\n", torch_output, type(torch_output))
 
+    print("\n\n")
     from jagerml.layers import DenseLayer
     dense = DenseLayer(n_out=labels, n_in=features)
     output = dense.forward(rt)
-    print("\n\n")
     print("DENSE :\n", output, type(output))
 
     # assert_almost_equal(dense.output, torch_output.detach().numpy(), decimal=6)
 
 
 if __name__ == "__main__":
-    test_linear_layer()
+    # test_linear_layer()
     test_DenseLayer()

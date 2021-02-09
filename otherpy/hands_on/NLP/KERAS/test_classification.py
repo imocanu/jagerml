@@ -29,9 +29,9 @@ def run_test():
         pos_abs_paths.append(q)
     test_ds_textline = tf.data.TextLineDataset(pos_abs_paths)
     for f in test_ds_textline.take(1):
-         print(f)
+        print(f)
 
-    print("*"*10)
+    print("*" * 10)
     files_ds = tf.data.Dataset.from_tensor_slices(pos_abs_paths)
     lines_ds = files_ds.interleave(tf.data.TextLineDataset, cycle_length=3)
 
@@ -44,6 +44,38 @@ def run_test():
     titanic_lines = tf.data.TextLineDataset(titanic_file)
     for line in titanic_lines.take(10):
         print(line.numpy())
+
+    # from Numpy
+    train, test = tf.keras.datasets.fashion_mnist.load_data()
+    images, labels = train
+    images = images / 255
+    print(type(images), type(labels))
+    print(len(images), len(labels))
+    dataset = tf.data.Dataset.from_tensor_slices((images, labels))
+
+    # for x, y in dataset.take(2):
+    #    print(x, y)
+
+    def count(stop):
+        i = 0
+        while i < stop:
+            yield i
+            i += 1
+
+    flowers = tf.keras.utils.get_file(
+        'flower_photos',
+        'https://storage.googleapis.com/download.tensorflow.org/example_images/flower_photos.tgz',
+        untar=True)
+
+    img_gen = tf.keras.preprocessing.image.ImageDataGenerator(rescale=1. / 255, rotation_range=20)
+    ds = tf.data.Dataset.from_generator(
+        lambda: img_gen.flow_from_directory(flowers),
+        output_types=(tf.float32, tf.float32),
+        output_shapes=([32, 256, 256, 3], [32, 5])
+    )
+
+    for images, label in ds.take(1):
+        print(images.shape, label.shape)
 
 
 if __name__ == "__main__":

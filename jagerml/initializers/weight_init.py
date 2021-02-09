@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 from jagerml.helper import *
-from jagerml.initializers.modes import HeUniform, glorot_uniform
+from jagerml.initializers.modes import he_uniform, he_normal, glorot_uniform, glorot_normal
 
 
 class WeightInitializer(ABC):
@@ -9,11 +9,26 @@ class WeightInitializer(ABC):
         self.mode = mode
         self.act_fn_str = act_fn_str
 
+        if mode not in [
+            "glorot_uniform",
+            "glorot_normal",
+            "he_uniform",
+            "he_normal",
+        ]:
+            raise ValueError("Mode {} not found !!!".format(mode))
+
         if mode == "glorot_uniform":
             print("[debug] __init__ select glorot_uniform")
             self._fn = glorot_uniform
+        elif mode == "glorot_normal":
+            print("[debug] __init__ select glorot_normal")
+            self._fn = glorot_normal
         elif mode == "he_uniform":
-            self._fn = HeUniform
+            print("[debug] __init__ select he_uniform")
+            self._fn = he_uniform
+        elif mode == "he_normal":
+            print("[debug] __init__ select he_normal")
+            self._fn = he_normal
         else:
             raise ValueError("error : unknown mode !")
 

@@ -152,6 +152,7 @@ class AccuracyCategorical(Accuracy):
             y = np.argmax(y, axis=1)
         return predictions == y
 
+
 class AccuracyRegression(Accuracy):
 
     def __init__(self):
