@@ -79,20 +79,34 @@ def test_mean_squared_error_v2(N=5):
 
 def test_cross_entropy(N=5):
     from jagerml.losses import CrossEntropy
+    from sklearn.metrics import log_loss
 
     n_classes = np.random.randint(2, 100)
     n_examples = np.random.randint(1, 1000)
-    y = y_pred = random_one_hot_matrix(n_examples, n_classes)
+    y = one_hot_matrix(n_examples, n_classes)
+    y_pred = stochastic_matrix(n_examples, n_classes)
 
     bc = tf.keras.losses.BinaryCrossentropy()
+    # softMax = tf.keras.activations.softmax(bc(y, y_pred).numpy())
     print("TF MSE :", bc(y, y_pred).numpy())
+
+    print("log_loss :", log_loss(y, y_pred))
 
     # torchLoss = nn.CrossEntropyLoss()
     # b = torchLoss(torch.tensor(y), torch.tensor(y_pred))
     # print("T      :", b.numpy())
 
     crossEntropy = CrossEntropy()
-    print("JAGER  :", crossEntropy(y, y_pred))
+    print(crossEntropy, crossEntropy(y, y_pred))
+    print(crossEntropy, crossEntropy.loss(y, y_pred))
+    print(crossEntropy, crossEntropy.loss(y, y_pred))
+
+    # pred1 = crossEntropy.log_softmax(y)
+    # loss1 = crossEntropy.nll(pred1, y_pred)
+    # print(crossEntropy, loss1)
+
+    #print(tf.nn.softmax_cross_entropy_with_logits(y, y_pred))
+
 
 
 if __name__ == "__main__":

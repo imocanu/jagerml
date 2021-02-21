@@ -69,8 +69,7 @@ def stochastic_matrix(features, labels, binary=False):
     return sm
 
 
-def random_one_hot_matrix(n_examples, n_classes):
-    """Create a random one-hot matrix of shape (`n_examples`, `n_classes`)"""
+def one_hot_matrix(n_examples, n_classes):
     X = np.eye(n_classes)
     X = X[np.random.choice(n_classes, n_examples)]
     return X

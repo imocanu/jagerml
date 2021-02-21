@@ -63,7 +63,38 @@ class CrossEntropy(BaseLoss):
         return "CrossEntropy"
 
     def __call__(self, y, y_pred):
-        return self.loss(y, y_pred)
+        return self.lossV2(y, y_pred)
+
+    @staticmethod
+    def lossV2(y, y_pred):
+        print("<############ V2 >")
+        m = y_pred.shape[0]
+
+        exps = np.exp(y)
+        p = exps / np.sum(exps)
+
+        log_likehood = -np.log(p[range(m), y_pred])
+        loss = np.sum(log_likehood) / m
+        return loss
+
+    @staticmethod
+    def log_softmax(x):
+        t1 = np.exp(x).sum(-1)
+        t2 = np.log(t1)
+        t3 = np.expand_dims(t2, -1)
+        # x - np.exp(x).sum(-1).log().unsqueeze(-1)
+        t4 = x - t3
+        #print(t4)
+        return t4
+
+    @staticmethod
+    def nll(input, target):
+        t1 = range(target.shape[0])
+        t2 = range(target.shape[1])
+        print("[***] :", input.shape)
+        print("[***] :", target.shape)
+        print("dims :", np.expand_dims(target, -1))
+        return -input[t1, target].mean()
 
     @staticmethod
     def loss(y, y_pred):
@@ -72,6 +103,8 @@ class CrossEntropy(BaseLoss):
         eps = np.finfo(float).eps
         corss_entropy = -np.sum(y * np.log(y_pred + eps))
         return corss_entropy
+
+
 
     @staticmethod
     def grad(y, y_pred):
